@@ -121,6 +121,24 @@ As another example, some systems require the provisioning process to embed appli
 information in either PSKs or their identities. Identities may sometimes need to be routable, as
 is currently under discussion for EAP-TLS.
 
+## Stack Interfaces
+
+Most major TLS implementations support external PSKs. And all have a common interface that
+applications may use when supplying them for individual connections. Details about existing
+stacks at the time of writing is below.
+
+- OpenSSL and BoringSSL: Applications specify support for external PSKs via distinct ciphersuites.
+They also then configure callbacks that are invoked for PSK selection during the handshake.
+These callbacks must provide the PSK identity (as a character string) and key (as a byte string).
+They are typically invoked with a PSK hint, i.e., the hint provided by the server as per {{?RFC4279}}.
+The PSK length is validated to be between \[1, 256\] bytes upon selection.
+- mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
+identity and value inline. Servers must implement callbacks similar to that of OpenSSL. PSK lengths
+are validate to be between \[1, 16\] bytes.
+- gnuTLS: Applications configure PSK values, either as raw byte strings or hexadecimal strings,
+and identities as "usernames". The PSK size is not validated.
+- wolfSSL: Applications configure PSKs with callbacks similar to OpenSSL.
+
 # Security and Privacy Properties
 
 Against a passive attacker AdvP or active attacker AdvA, desired privacy properties might include:
