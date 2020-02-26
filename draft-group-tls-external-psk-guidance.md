@@ -71,7 +71,7 @@ informative:
              name: Hugo Krawczyk
      date: 2003
      seriesinfo: Annual International Cryptology Conference. Springer, Berlin, Heidelberg
-     target: https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_24.pdf     
+     target: https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_24.pdf
   Sethi:
      title: "Misbinding Attacks on Secure Device Pairing and Bootstrapping"
      author:
@@ -84,10 +84,10 @@ informative:
              name: Aleksi Peltonen
          -
              ins: T. Aura
-             name: Tuomas Aura          
+             name: Tuomas Aura
      date: 2019
      seriesinfo: Proceedings of the 2019 ACM Asia Conference on Computer and Communications Security
-     target: https://arxiv.org/pdf/1902.07550    
+     target: https://arxiv.org/pdf/1902.07550
 --- abstract
 
 TODO
@@ -115,7 +115,7 @@ Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK
 
 - Internet of Things (IoT) and devices with limited computational capabilities. {{RFC7925}} defines TLS and DTLS profiles for resource-constrained devices and suggests the use of PSK ciphersuites for compliant devices.
 
-- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified in {{RFC6614}}. 
+- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified in {{RFC6614}}.
 
 - The Generic Authentication Architecture (GAA) defined by 3GGP mentions that TLS-PSK can be used between a server and user equipment for authentication {{GAA}}.
 
@@ -130,7 +130,7 @@ There are also use cases where PSKs are shared between more than two entities. S
 
 ## Provisioning Examples
 
-- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU) approach with a device completely unprotected before the first login did take place). Many devices have very limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production lacks guidance unlike user passwords. 
+- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU) approach with a device completely unprotected before the first login did take place). Many devices have very limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production lacks guidance unlike user passwords.
 
 - Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
 
@@ -162,7 +162,7 @@ and identities as "usernames". The PSK size is not validated.
 
 Against a passive attacker AdvP or active attacker AdvA, desired privacy properties might include:
 
-- Peer Authentication. The client’s view of the peer identity should reflect the server’s identity. 
+- Peer Authentication. The client’s view of the peer identity should reflect the server’s identity.
 If the client is authenticated, the server’s view of the peer identity should match the client’s identity.
 Moreover, the client’s view of the peer identity should not match its own identity {{Selfie}}.
 - Channel Binding. External PSKs should include channel bindings from any protocol run a priori to
@@ -178,24 +178,84 @@ authentication.)
 
 ## Security Assumptions
 
-TODO(jonathan): writeme
+As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such
+cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group
+member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
+ways.
 
-- Shared session keys:
-- Session key secrecy:
-- Peer authentication:
-- Session key uniqueness:
-- Downgrade protection:
-- Forward secrecy:
-- KCI protection:
-- Endpoint identity protection:
+The TLS external PSK authentication mechanism implicitly assumes that each PSK is known to exactly one client and one
+server, and that these never switch roles.  If this assumption is violated, then TLS 1.3 offers virtually no security by
+default.
+
+TLS 1.3 tries to maintain 8 security properties in the handshake.  A naïve sharing of PSKs, even assuming only honest
+but curious participants know the key, can violate all these properties, bar one.  The protection of endpoint identities
+property holds vacuously, because the client and server do not use certificates in PSK mode.
+
+The other property violations can be demonstrated with three attacks of increasing severity.
+
+### Simple redirection
+This attack simply requires the adversary to reroute messages without changing any of their contents.
+
+Let the group of peers who know the key be `A`, `B`, and `C`.
+The attack proceeds as follows.
+1. `A` sends a `ClientHello` to `B`
+2. The attacker intercepts the message and redirects it to `C`
+3. `C` responds with to `A`
+4. `A` sends a `Finished` message to `B`
+`A` has completed the handshake, ostensibly with `B`.
+5. The attacker redirects the `Finished` message to `C`
+`C` has completed the handshake, ostensibly with `A`.
+
+This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
+attack also violates the downgrade protection property.  This rerouting is a type of identity misbinding attack
+{{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
+can act both as TLS server and client. In the selfie attack, a malicious non-member reroutes a connection from the
+client to the server on the same endpoint.
+
+
+### Lack of DHE
+If the client performs a PSK-based handshake without a DHE exchange, then another trivial attack is possible.
+
+Let the group of peers who know the key be `A`, `B`, and `C`.
+The attack proceeds as follows.
+1. `A` sends a `ClientHello` to `B`, without including a key share
+2. The handshake is completed as expected
+
+This attack violates the secrecy of session keys property, because even an honest but curious `C` can decrypt the
+session between `A` and `B`.  This attack also violates forward secrecy, because a future compromise of `C` reveals the
+contents of the session, however {{RFC8446}} notes that PSK-based handshakes without a fresh DHE do not achieve this
+property.
+
+### Compromise of an uninvolved node
+If the attacker compromises a client or server then the session is definitionally insecure, however sharing the key with
+more than one client and one server means that compromise of a different actor can lead to attacks.
+
+Let the group of peers who know the key be `A`, `B`, and `C`.
+The attack proceeds as follows.
+1. Let the attacker compromise `C`
+2. `A` sends a `ClientHello` to `B`
+3. The attacker intercepts the message and creates a new `ClientHello`
+4. The attacker sends the new `ClientHello` to `B`
+5. `B` responds to `A`
+6. The attacker intercepts the message and creates a new response
+7. The attacker sends the new response to `A`
+8. `A` sends a `Finished` message to `B`
+`A` has completed the handshake, ostensibly with `B`.
+9. The attacker intercepts the `Finished` message and creates a new `Finished` message
+10. The attacker sends the new `Finished` message to `B`
+`B` has completed the handshake, ostensibly with `A`.
+
+This attack, and minor variants of it, violate the remaining properties.
+The attack violates the same session keys property, as `A` and `B` have each completed a session, ostensibly with each
+other, and yet do not agree on the session key.  If `A` does not send a key share, then the attacker can have a session
+with `A` and a separate session with `B`, where both sessions have the same key. This violates the uniqueness of session
+keys property.  In the case of KCI resistance, where we assume the attacker has compromised `A`, the attacker can
+successfully impersonate `B` to `A` using this pattern.
+
+These attacks demonstrate the need to do something more intelligent.
 
 # Known Attacks
 
-The TLS external PSK authentication makes the implicit assumption that each PSK is known only to one client and one server, which do not switch roles with the same PSK.
-
-As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended ways. This rerouting is a type of identity misbinding attack {{Krawczyk}}{{Sethi}}.
-
-Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that can act both as TLS server and client. In the selfie attack, a malicious non-member reroutes a connection from the client to the server on the same endpoint.
 
 # Recommendations for External PSK Usage
 
