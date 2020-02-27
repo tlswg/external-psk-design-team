@@ -71,7 +71,7 @@ informative:
              name: Hugo Krawczyk
      date: 2003
      seriesinfo: Annual International Cryptology Conference. Springer, Berlin, Heidelberg
-     target: https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_24.pdf     
+     target: https://link.springer.com/content/pdf/10.1007/978-3-540-45146-4_24.pdf
   Sethi:
      title: "Misbinding Attacks on Secure Device Pairing and Bootstrapping"
      author:
@@ -84,10 +84,10 @@ informative:
              name: Aleksi Peltonen
          -
              ins: T. Aura
-             name: Tuomas Aura          
+             name: Tuomas Aura
      date: 2019
      seriesinfo: Proceedings of the 2019 ACM Asia Conference on Computer and Communications Security
-     target: https://arxiv.org/pdf/1902.07550    
+     target: https://arxiv.org/pdf/1902.07550
 --- abstract
 
 TODO
@@ -115,7 +115,7 @@ Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK
 
 - Internet of Things (IoT) and devices with limited computational capabilities. {{RFC7925}} defines TLS and DTLS profiles for resource-constrained devices and suggests the use of PSK ciphersuites for compliant devices.
 
-- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified in {{RFC6614}}. 
+- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified in {{RFC6614}}.
 
 - The Generic Authentication Architecture (GAA) defined by 3GGP mentions that TLS-PSK can be used between a server and user equipment for authentication {{GAA}}.
 
@@ -130,7 +130,7 @@ There are also use cases where PSKs are shared between more than two entities. S
 
 ## Provisioning Examples
 
-- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU) approach with a device completely unprotected before the first login did take place). Many devices have very limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production lacks guidance unlike user passwords. 
+- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU) approach with a device completely unprotected before the first login did take place). Many devices have very limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production lacks guidance unlike user passwords.
 
 - Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
 
@@ -148,7 +148,8 @@ stacks at the time of writing is below.
 
 - OpenSSL and BoringSSL: Applications specify support for external PSKs via distinct ciphersuites.
 They also then configure callbacks that are invoked for PSK selection during the handshake.
-These callbacks must provide the PSK identity (as a character string) and key (as a byte string).
+These callbacks must provide a PSK identity (as a character string) and key (as a byte string).
+(If no identity is provided, a default one is assumed.)
 They are typically invoked with a PSK hint, i.e., the hint provided by the server as per {{?RFC4279}}.
 The PSK length is validated to be between \[1, 256\] bytes upon selection.
 - mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
@@ -162,7 +163,7 @@ and identities as "usernames". The PSK size is not validated.
 
 Against a passive attacker AdvP or active attacker AdvA, desired privacy properties might include:
 
-- Peer Authentication. The client’s view of the peer identity should reflect the server’s identity. 
+- Peer Authentication. The client’s view of the peer identity should reflect the server’s identity.
 If the client is authenticated, the server’s view of the peer identity should match the client’s identity.
 Moreover, the client’s view of the peer identity should not match its own identity {{Selfie}}.
 - Channel Binding. External PSKs should include channel bindings from any protocol run a priori to
@@ -199,7 +200,13 @@ Selfie attack {{Selfie}} is a special case of the rerouting attack against a gro
 
 # Recommendations for External PSK Usage
 
-TODO
+Given the desired security goals from TODO, applications which make use of
+external PSKs MUST adhere to the following requirements:
+
+- Each PSK MUST be shared between at most two logical nodes.
+- Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
+when configuring PSKs for individual TLS connections.
+- Each PSK MUST be at least 128-bits long.
 
 # IANA Considerations {#IANA}
 
