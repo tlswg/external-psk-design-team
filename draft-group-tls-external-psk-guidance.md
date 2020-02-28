@@ -183,7 +183,7 @@ cases, TLS only authenticates the entire group. Not only can a compromised group
 member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
 ways.
 
-The TLS external PSK authentication mechanism implicitly assumes that each PSK is known to exactly one client and one
+The TLS external PSK authentication mechanism implicitly assumes one fundamental property: each PSK is known to exactly one client and one
 server, and that these never switch roles.  If this assumption is violated, standard TLS 1.3 security properties are
 invalidated.
 
@@ -205,13 +205,15 @@ properties, bar one.  Endpoint Identity Protection holds vacuously, because the 
 certificates in PSK mode. (This is not true with use of the "tls_cert_with_extern_psk" extension
 {{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)
 
-The other property violations can be demonstrated with three attacks of increasing severity.
+In the following sub-sections, we list attacks that demonstrate violations of these properties when the fundamental PSK
+assumption does not hold.
 
-### Simple redirection
+
+### Redirection (Selfie-style)
 This attack simply requires the adversary to reroute messages without changing any of their contents.
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows.
+The attack proceeds as follows:
 1. `A` sends a `ClientHello` to `B`
 2. The attacker intercepts the message and redirects it to `C`
 3. `C` responds with to `A`
@@ -223,7 +225,7 @@ The attack proceeds as follows.
 This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
 attack also violates the downgrade protection property.  This rerouting is a type of identity misbinding attack
 {{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
-can act both as TLS server and client. In the selfie attack, a malicious non-member reroutes a connection from the
+can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
 client to the server on the same endpoint.
 
 
@@ -233,7 +235,7 @@ If the client performs a PSK-based handshake without a DHE exchange, then anothe
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows.
 1. `A` sends a `ClientHello` to `B`, without including a key share
-2. The handshake is completed as expected
+2. The handshake completes as expected
 
 This attack violates the secrecy of session keys property, because even an honest but curious `C` can decrypt the
 session between `A` and `B`.  This attack also violates forward secrecy, because a future compromise of `C` reveals the
@@ -259,14 +261,13 @@ The attack proceeds as follows.
 10. The attacker sends the new `Finished` message to `B`
 `B` has completed the handshake, ostensibly with `A`.
 
-This attack, and minor variants of it, violate the remaining properties.
+This attack, and minor variants of it, violate the remaining properties outlined above.
 The attack violates the same session keys property, as `A` and `B` have each completed a session, ostensibly with each
 other, and yet do not agree on the session key.  If `A` does not send a key share, then the attacker can have a session
 with `A` and a separate session with `B`, where both sessions have the same key. This violates the uniqueness of session
 keys property.  In the case of KCI resistance, where we assume the attacker has compromised `A`, the attacker can
 successfully impersonate `B` to `A` using this pattern.
 
-These attacks demonstrate the need to do something more intelligent.
 
 # Known Attacks
 
