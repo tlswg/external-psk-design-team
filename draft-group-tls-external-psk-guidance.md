@@ -184,12 +184,26 @@ member, but a malicious non-member can reroute handshakes between honest group m
 ways.
 
 The TLS external PSK authentication mechanism implicitly assumes that each PSK is known to exactly one client and one
-server, and that these never switch roles.  If this assumption is violated, then TLS 1.3 offers virtually no security by
-default.
+server, and that these never switch roles.  If this assumption is violated, standard TLS 1.3 security properties are
+invalidated.
 
-TLS 1.3 tries to maintain 8 security properties in the handshake.  A naïve sharing of PSKs, even assuming only honest
-but curious participants know the key, can violate all these properties, bar one.  The protection of endpoint identities
-property holds vacuously, because the client and server do not use certificates in PSK mode.
+TLS 1.3 tries to maintain the following eight security properties:
+
+1. Matching the same session keys;
+2. Session key secrecy;
+3. Peer authentication;
+4. Session key uniqueness;
+5. Downgrade protection;
+6. Forward secrecy with respect to long-term keys;
+7. Key Compromise Impersonation (KCI) resistance; and
+8. Endpoint identity protection.
+
+
+
+A naïve sharing of PSKs, even assuming only honest but curious participants know the key, can violate all these
+properties, bar one.  Endpoint Identity Protection holds vacuously, because the client and server do not use
+certificates in PSK mode. (This is not true with use of the "tls_cert_with_extern_psk" extension
+{{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)
 
 The other property violations can be demonstrated with three attacks of increasing severity.
 
