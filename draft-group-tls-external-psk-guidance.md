@@ -121,7 +121,6 @@ Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK
 
 - Smart Cards. The electronic German ID (eID) card supports authentication of a card holder to online services with TLS-PSK {{SmartCard}}.
 
-
 There are also use cases where PSKs are shared between more than two entities. Some examples below (as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
 
 - Group chats. In this use-case, the membership of a group is confirmed by the possession of a PSK distributed out-of-band to the group participants. Members can then establish peer-to-peer connections with each other using the external PSK. It is important to note that any node of the group can behave as a TLS client or server.
@@ -148,7 +147,8 @@ stacks at the time of writing is below.
 
 - OpenSSL and BoringSSL: Applications specify support for external PSKs via distinct ciphersuites.
 They also then configure callbacks that are invoked for PSK selection during the handshake.
-These callbacks must provide the PSK identity (as a character string) and key (as a byte string).
+These callbacks must provide a PSK identity (as a character string) and key (as a byte string).
+(If no identity is provided, a default one is assumed.)
 They are typically invoked with a PSK hint, i.e., the hint provided by the server as per {{?RFC4279}}.
 The PSK length is validated to be between \[1, 256\] bytes upon selection.
 - mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
@@ -157,59 +157,38 @@ are validate to be between \[1, 16\] bytes.
 - gnuTLS: Applications configure PSK values, either as raw byte strings or hexadecimal strings. The PSK size is not validated.
 - wolfSSL: Applications configure PSKs with callbacks similar to OpenSSL.
 
-### PSK Identity encoding and comparison 
+### PSK Identity encoding and comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{RFC7925}} advises implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations. TLS version 1.3 {{RFc8446}} follows the same practice of specifying the psk identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>). 
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{RFC7925}} advises implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations. TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>).
 
-- Implementations such as OpenSSL and mbedTLS nonetheless treat psk_identities as character strings and use string operators such as strcmp on the psk identity. 
+- Implementations such as OpenSSL and mbedTLS nonetheless treat psk_identities as character strings and use string operators such as `strcmp` on the psk identity.
 - Implementations also assign default identities to PSKs (for example, the string 'Client_identity') if none are configured.
 - gnuTLS treats psk identities as usernames.
-- OpenSSL TLS 1.3 servers accept connections from clients that have a valid PSK even if the identity provided by the client is incorrect. 
+- OpenSSL TLS 1.3 servers accept connections from clients that have a valid PSK even if the identity provided by the client is incorrect.
 
+# External PSK Security Properties {#sec-properties}
 
-# Security and Privacy Properties
-
-Against a passive attacker AdvP or active attacker AdvA, desired privacy properties might include:
-
-- Peer Authentication. The client’s view of the peer identity should reflect the server’s identity.
-If the client is authenticated, the server’s view of the peer identity should match the client’s identity.
-Moreover, the client’s view of the peer identity should not match its own identity {{Selfie}}.
-- Channel Binding. External PSKs should include channel bindings from any protocol run a priori to
-provision the PSKs.
-- Identity Confidentiality. AdvP should learn no information about the external PSK or its identifier.
-Similarly, AdvA should be unable to replay ClientHello messages and learn information about the PSK.
-- Identity Unlinkability. AdvP should be unable to link two or more connections together that use the
-same external PSK.
-
-Unlinkability for the PSK receiver, i.e., ensuring that the recipient of a ClientHello with a given PSK
-k cannot link k to a prior session, is out of scope. (PSKs are explicitly designed to support mutual
-authentication.)
-
-## Security Assumptions
-
-As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such
-cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group
-member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
-ways.
-
-The TLS external PSK authentication mechanism implicitly assumes one fundamental property: each PSK is known to exactly one client and one
-server, and that these never switch roles.  If this assumption is violated, standard TLS 1.3 security properties are
-invalidated.
-
-TLS 1.3 tries to maintain the following eight security properties:
+TLS 1.3 tries to maintain the following seven security properties:
 
 1. Matching the same session keys;
 2. Session key secrecy;
 3. Peer authentication;
 4. Session key uniqueness;
 5. Downgrade protection;
-6. Forward secrecy with respect to long-term keys;
-7. Key Compromise Impersonation (KCI) resistance; and
-8. Endpoint identity protection.
+6. Forward secrecy with respect to long-term keys; and
+7. Key Compromise Impersonation (KCI) resistance.
 
+To achieve these properties, the external PSK authentication mechanism implicitly assumes one fundamental
+property: each PSK is known to exactly one client and one server, and that these never switch roles.
+If this assumption is violated, standard TLS 1.3 security properties are invalidated. Section {{violations}}
+discusses attacks that are possible when this occurs.
 
+## Security Assumption Violations {#violations}
 
-A naïve sharing of PSKs, even assuming only honest but curious participants know the key, can violate all these
+As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such
+cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group
+member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
+ways. A naïve sharing of PSKs, even assuming only honest but curious participants know the key, can violate all these
 properties, bar one.  Endpoint Identity Protection holds vacuously, because the client and server do not use
 certificates in PSK mode. (This is not true with use of the "tls_cert_with_extern_psk" extension
 {{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)
@@ -217,18 +196,19 @@ certificates in PSK mode. (This is not true with use of the "tls_cert_with_exter
 In the following sub-sections, we list attacks that demonstrate violations of these properties when the fundamental PSK
 assumption does not hold.
 
-
 ### Redirection (Selfie-style)
+
 This attack simply requires the adversary to reroute messages without changing any of their contents.
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
-1. `A` sends a `ClientHello` to `B`
-2. The attacker intercepts the message and redirects it to `C`
-3. `C` responds with to `A`
-4. `A` sends a `Finished` message to `B`
+
+1. `A` sends a `ClientHello` to `B`.
+2. The attacker intercepts the message and redirects it to `C`.
+3. `C` responds with to `A`.
+4. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
-5. The attacker redirects the `Finished` message to `C`
+5. The attacker redirects the `Finished` message to `C`.
 `C` has completed the handshake, ostensibly with `A`.
 
 This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
@@ -237,14 +217,15 @@ attack also violates the downgrade protection property.  This rerouting is a typ
 can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
 client to the server on the same endpoint.
 
-
 ### Lack of DHE
+
 If the client performs a PSK-based handshake without a DHE exchange, then another trivial attack is possible.
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows.
-1. `A` sends a `ClientHello` to `B`, without including a key share
-2. The handshake completes as expected
+The attack proceeds as follows:
+
+1. `A` sends a `ClientHello` to `B`, without including a key share.
+2. The handshake completes as expected.
 
 This attack violates the secrecy of session keys property, because even an honest but curious `C` can decrypt the
 session between `A` and `B`.  This attack also violates forward secrecy, because a future compromise of `C` reveals the
@@ -252,22 +233,24 @@ contents of the session, however {{RFC8446}} notes that PSK-based handshakes wit
 property.
 
 ### Compromise of an uninvolved node
+
 If the attacker compromises a client or server then the session is definitionally insecure, however sharing the key with
 more than one client and one server means that compromise of a different actor can lead to attacks.
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows.
-1. Let the attacker compromise `C`
-2. `A` sends a `ClientHello` to `B`
-3. The attacker intercepts the message and creates a new `ClientHello`
-4. The attacker sends the new `ClientHello` to `B`
-5. `B` responds to `A`
-6. The attacker intercepts the message and creates a new response
-7. The attacker sends the new response to `A`
-8. `A` sends a `Finished` message to `B`
+The attack proceeds as follows:
+
+1. Let the attacker compromise `C`.
+2. `A` sends a `ClientHello` to `B`.
+3. The attacker intercepts the message and creates a new `ClientHello`.
+4. The attacker sends the new `ClientHello` to `B`.
+5. `B` responds to `A`.
+6. The attacker intercepts the message and creates a new response.
+7. The attacker sends the new response to `A`.
+8. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
-9. The attacker intercepts the `Finished` message and creates a new `Finished` message
-10. The attacker sends the new `Finished` message to `B`
+9. The attacker intercepts the `Finished` message and creates a new `Finished` message.
+10. The attacker sends the new `Finished` message to `B`.
 `B` has completed the handshake, ostensibly with `A`.
 
 This attack, and minor variants of it, violate the remaining properties outlined above.
@@ -277,20 +260,49 @@ with `A` and a separate session with `B`, where both sessions have the same key.
 keys property.  In the case of KCI resistance, where we assume the attacker has compromised `A`, the attacker can
 successfully impersonate `B` to `A` using this pattern.
 
-
-# Known Attacks
-
-
 # Recommendations for External PSK Usage
 
-TODO
+Given the desired security goals from TODO, applications which make use of
+external PSKs MUST adhere to the following requirements:
+
+- Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
+that acts as both a client and a server MUST use distinct PSKs when acting as the client from
+when it is acting as the server.
+- Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
+when configuring PSKs for individual TLS connections.
+- Each PSK MUST be at least 128-bits long.
+
+# Privacy Properties
+
+PSK privacy properties are orthogonal to security properties described in {{sec-properties}}.
+Traditionally, TLS does little to keep PSK identity information private. For example,
+an adversary learns information about the external PSK or its identifier by virtue of it
+appearing in cleartext in a ClientHello. As a result, a passive adversary can link
+two or more connections together that use the same external PSK on the wire. Applications should
+take precautions when using external PSKs if these risks.
+
+In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
+Specifically, servers can link successive connections that use the same external PSK together. Preventing
+this type of linkability is out of scope, as PSKs are explicitly designed to support mutual authentication.
 
 # IANA Considerations {#IANA}
 
-TODO
+This document makes no IANA requests.
 
 --- back
 
 # Acknowledgements
 
-TODO
+This document is the output of the TLS External PSK Design Team, comprised of the following members:
+Martin Thomson,
+Colm MacCárthaigh,
+Mohit Sethi,
+Björn Haase,
+Jonathan Hoyland,
+Eric Rescorla,
+Russ Housley,
+Chris Wood,
+Mohamad Badra,
+Benjamin Beurdouche,
+Oleg Pekar, and
+Owen Friel.
