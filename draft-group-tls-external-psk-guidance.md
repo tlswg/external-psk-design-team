@@ -339,15 +339,15 @@ This document makes no IANA requests.
 # Acknowledgements
 
 This document is the output of the TLS External PSK Design Team, comprised of the following members:
-Martin Thomson,
-Colm MacCárthaigh,
-Mohit Sethi,
-Björn Haase,
-Jonathan Hoyland,
-Eric Rescorla,
-Russ Housley,
-Chris Wood,
-Mohamad Badra,
 Benjamin Beurdouche,
-Oleg Pekar, and
-Owen Friel.
+Björn Haase,
+Chris Wood,
+Colm MacCárthaigh,
+Eric Rescorla,
+Jonathan Hoyland,
+Martin Thomson,
+Mohamad Badra,
+Mohit Sethi,
+Oleg Pekar,
+Owen Friel, and
+Russ Housley.
