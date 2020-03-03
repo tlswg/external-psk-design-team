@@ -75,7 +75,6 @@ informative:
   Sethi:
      title: "Misbinding Attacks on Secure Device Pairing and Bootstrapping"
      author:
-     author:
          -
              ins: M. Sethi
              name: Mohit Sethi
@@ -133,13 +132,13 @@ discusses attacks that are possible when this occurs.
 As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such
 cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group
 member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
-ways. A naïve sharing of PSKs, even assuming only honest but curious participants know the key, does not enforce any of
-these properties, bar one.  Endpoint Identity Protection holds vacuously, because the client and server do not use
+ways. A naïve sharing of PSKs, even assuming only honest but curious participants know the key, can violate all these
+properties, bar one.  Endpoint Identity Protection holds vacuously, because the client and server do not use
 certificates in PSK mode. (This is not true with use of the "tls_cert_with_extern_psk" extension
 {{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)
 
 In the following sub-sections, we list attacks that demonstrate violations of these properties when the fundamental PSK
-assumption does not hold. This list is not exhaustive, but merely highlights a number of potential pitfalls.
+assumption does not hold.
 
 ### Redirection (Selfie-style)
 
@@ -150,7 +149,7 @@ The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
 2. The attacker intercepts the message and redirects it to `C`.
-3. `C` responds with to `A`.
+3. `C` responds with a `ServerHello` to `A`.
 4. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
 5. The attacker redirects the `Finished` message to `C`.
@@ -169,7 +168,7 @@ If the client performs a PSK-based handshake without a DHE exchange, then anothe
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
 
-1. `A` sends a `ClientHello` to `B`, without including a key share.
+1. `A` sends a `ClientHello` to `B`, without including a key share extension.
 2. The handshake completes as expected.
 
 This attack violates the secrecy of session keys property, because even an honest but curious `C` can decrypt the
@@ -200,15 +199,16 @@ The attack proceeds as follows:
 
 This attack, and minor variants of it, violate the remaining properties outlined above.
 The attack violates the same session keys property, as `A` and `B` have each completed a session, ostensibly with each
-other, and yet do not agree on the session key.  If `A` does not send a key share, then the attacker can have a session
-with `A` and a separate session with `B`, where both sessions have the same key. This violates the uniqueness of session
-keys property.  In the case of KCI resistance, where we assume the attacker has compromised `A`, the attacker can
-successfully impersonate `B` to `A` using this pattern.
+other, and yet do not agree on the session key.  If `A` does not send a key share extension, then the attacker can have a session
+with `A` and a separate session with `B`, where both sessions have the same key. Since the attacker has knowledge of all of the
+messages and their content, the nonce in the handshake does not prevent the attacker from computing the full key schedule.
+This violates the uniqueness of session keys property.  In the case of KCI resistance, where we assume the attacker has
+compromised `A`, the attacker can successfully impersonate `B` to `A` using this pattern.
 
 # Recommendations for External PSK Usage
 
-Given the desired security goals from {{sec-properties}}, applications which make use of
-external PSKs MUST adhere to the following requirements:
+To achieve the security goals from {{sec-properties}} when the external PSK will not be combined with a pairwise secret value,
+applications MUST use external PSKs that adhere to the following requirements:
 
 - Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
 that acts as both a client and a server MUST use distinct PSKs when acting as the client from
@@ -216,7 +216,6 @@ when it is acting as the server.
 - Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
 when configuring PSKs for individual TLS connections.
 - Each PSK MUST be at least 128-bits long.
-- Each PSK SHOULD be seeded from a source with at least 128-bits of entropy.
 
 # Privacy Properties
 
@@ -225,7 +224,7 @@ Traditionally, TLS does little to keep PSK identity information private. For exa
 an adversary learns information about the external PSK or its identifier by virtue of it
 appearing in cleartext in a ClientHello. As a result, a passive adversary can link
 two or more connections together that use the same external PSK on the wire. Applications should
-take precautions when using external PSKs if these risks are a concern.
+take precautions when using external PSKs if these risks.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
 Specifically, servers can link successive connections that use the same external PSK together. Preventing
@@ -276,12 +275,12 @@ authentication with the usage of a certificate after successfully establishing t
 
 ## Provisioning Examples
 
-- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following approaches:
-  typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU) approach with a device
-completely unprotected before the first login did take place). Many devices have very limited UI. For example, they may
-only have a numeric keypad or perhaps an interface with even fewer buttons. When the TOFU approach is not suitable,
-entering the key may require typing it on a  very constrained UI. Moreover, PSK production lacks guidance unlike user
-passwords.
+- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following
+approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU)
+approach with a device completely unprotected before the first login did take place). Many devices have very
+limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU
+approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production
+lacks guidance unlike user passwords.
 
 - Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
 
