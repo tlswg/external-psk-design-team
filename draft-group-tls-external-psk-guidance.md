@@ -136,37 +136,25 @@ when, and only when, they appear in all capitals, as shown here.
 
 # PSK Security Properties {#sec-properties}
 
-TLS 1.3 tries to maintain the following seven security properties:
+The external PSK authentication mechanism in TLS implicitly assumes
+one fundamental property: each PSK is known to exactly one client and
+one server, and that these never switch roles.  If this assumption is
+violated, then the security properties of TLS are severely weakened.
 
-1. Matching the same session keys;
-2. Session key secrecy;
-3. Peer authentication;
-4. Session key uniqueness;
-5. Downgrade protection;
-6. Forward secrecy with respect to long-term keys; and
-7. Key Compromise Impersonation (KCI) resistance.
+As discussed in {{use-cases}}, there are use cases where it is
+desirable for multiple clients or multiple servers share a PSK. If
+this is done naively by having all members share a common key, then
+TLS only authenticates the entire group, and the security of the
+overall system is inherently rather brittle. There are a number of
+obvious weaknesses here:
 
-To achieve these properties, the external PSK authentication mechanism implicitly assumes one fundamental
-property: each PSK is known to exactly one client and one server, and that these never switch roles.
-If this assumption is violated, standard TLS 1.3 security properties are invalidated. Section {{violations}}
-discusses attacks that are possible when this occurs.
+1. Any group member can impersonate any other group member.
+1. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).
+1. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.
 
-## Security Assumption Violations {#violations}
-
-As discussed in {{use-cases}}, there are use cases where multiple clients or multiple servers share a PSK. In such
-cases, TLS only authenticates the entire group. Not only can a compromised group member impersonate another group
-member, but a malicious non-member can reroute handshakes between honest group members to connect them in unintended
-ways. A naïve sharing of PSKs, even assuming only honest but curious participants know the key, can violate all these
-properties, bar one.  Endpoint Identity Protection holds vacuously, because the client and server do not use
-certificates in PSK mode. (This is not true with use of the "tls_cert_with_extern_psk" extension
-{{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)
-
-In the following sub-sections, we list attacks that demonstrate violations of these properties when the fundamental PSK
-assumption does not hold.
-
-### Redirection (Selfie-style)
-
-This attack simply requires the adversary to reroute messages without changing any of their contents.
+In addition to these, a malicious non-member can reroute handshakes
+between honest group members to connect them in unintended ways, as
+detailed below.
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
@@ -184,50 +172,6 @@ attack also violates the downgrade protection property.  This rerouting is a typ
 {{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
 can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
 client to the server on the same endpoint.
-
-### Lack of DHE
-
-If the client performs a PSK-based handshake without a DHE exchange, then another trivial attack is possible.
-
-Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows:
-
-1. `A` sends a `ClientHello` to `B`, without including a key share extension.
-2. The handshake completes as expected.
-
-This attack violates the secrecy of session keys property, because even an honest but curious `C` can decrypt the
-session between `A` and `B`.  This attack also violates forward secrecy, because a future compromise of `C` reveals the
-contents of the session, however {{RFC8446}} notes that PSK-based handshakes without a fresh DHE do not achieve this
-property.
-
-### Compromise of an uninvolved node
-
-If the attacker compromises a client or server then the session is definitionally insecure, however sharing the key with
-more than one client and one server means that compromise of a different actor can lead to attacks.
-
-Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows:
-
-1. Let the attacker compromise `C`.
-2. `A` sends a `ClientHello` to `B`.
-3. The attacker intercepts the message and creates a new `ClientHello`.
-4. The attacker sends the new `ClientHello` to `B`.
-5. `B` responds to `A`.
-6. The attacker intercepts the message and creates a new response.
-7. The attacker sends the new response to `A`.
-8. `A` sends a `Finished` message to `B`.
-`A` has completed the handshake, ostensibly with `B`.
-9. The attacker intercepts the `Finished` message and creates a new `Finished` message.
-10. The attacker sends the new `Finished` message to `B`.
-`B` has completed the handshake, ostensibly with `A`.
-
-This attack, and minor variants of it, violate the remaining properties outlined above.
-The attack violates the same session keys property, as `A` and `B` have each completed a session, ostensibly with each
-other, and yet do not agree on the session key.  If `A` does not send a key share extension, then the attacker can have a session
-with `A` and a separate session with `B`, where both sessions have the same key. Since the attacker has knowledge of all of the
-messages and their content, the nonce in the handshake does not prevent the attacker from computing the full key schedule.
-This violates the uniqueness of session keys property.  In the case of KCI resistance, where we assume the attacker has
-compromised `A`, the attacker can successfully impersonate `B` to `A` using this pattern.
 
 # Recommendations for External PSK Usage
 
