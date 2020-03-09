@@ -149,8 +149,8 @@ overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-1. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).
-1. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.
+2. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).
+3. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.
 
 In addition to these, a malicious non-member can reroute handshakes
 between honest group members to connect them in unintended ways, as
