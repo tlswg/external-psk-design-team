@@ -234,7 +234,7 @@ compromised `A`, the attacker can successfully impersonate `B` to `A` using this
 
 Applications MUST use external PSKs that adhere to the following requirements:
 
-1. Each PSK MUST be at least 128-bits long unless the TLS handshake is being used with a separate key
+1. Each PSK MUST be derived from at least 128 of entropy and MUST be at least 128-bits long unless the TLS handshake is being used with a separate key
 establishment mechanism such as a Diffie-Hellman exchange. This recommendation
 protects against passive attacks using exhaustive search of the PSK.
 1. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
