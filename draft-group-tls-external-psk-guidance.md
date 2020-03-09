@@ -31,6 +31,7 @@ author:
   -
     ins: C.A. Wood
     name: Christopher A. Wood
+    email: caw@heapingbits.net
 
 normative:
   RFC2119:
