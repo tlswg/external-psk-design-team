@@ -56,6 +56,9 @@ informative:
              name: Alexandr Sokolov
      date: 2019
      target: https://eprint.iacr.org/2019/421.pdf
+  LwM2M:
+    title: "Lightweight Machine to Machine Technical Specification"
+    target: http://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf
   GAA:
     title: "TR33.919 version 12.0.0 Release 12"
     target: https://www.etsi.org/deliver/etsi_tr/133900_133999/133919/12.00.00_60/tr_133919v120000p.pdf
@@ -102,6 +105,10 @@ in various use cases to help meet these assumptions.
 # Introduction
 
 TODO
+
+## Applicability
+
+The guidance provided in this document is applicable across TLS {{RFC8446}}, DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
 
 # Conventions and Definitions
 
@@ -246,9 +253,11 @@ online protocol.
 or PoP may use externally provisioned PSKs, primarily for the purposes of supporting TLS
 connections with fast open (0-RTT data).
 
+- Certificateless server-to-server communication. Machine-to-machine communication may use externally provisioned PSKs, primarily for the purposes of establishing TLS connections without requiring the overhead of provisioning and managing PKI certificates.
+
 - Internet of Things (IoT) and devices with limited computational capabilities. {{RFC7925}}
 defines TLS and DTLS profiles for resource-constrained devices and suggests the use of PSK
-ciphersuites for compliant devices.
+ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the PSK mode of DTLS.
 
 - Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified
 in {{RFC6614}}.
@@ -285,6 +294,8 @@ lacks guidance unlike user passwords.
 - Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
 
 - Secrets may be baked into or hardware or software device components, such as secure enclaves.
+
+- Where secrets are baked into hardware at manufacturing time, the secrets may be printed on labels or included in a Bill of Materials for ease of scanning or import into a server.
 
 ## Provisioning Constraints
 
@@ -329,6 +340,12 @@ string operators such as `strcmp` on the psk identity.
 - gnuTLS treats psk identities as usernames.
 - OpenSSL servers accept connections from clients that have a valid PSK even if the identity provided by
 the client is incorrect.
+
+### External PSK versus Resumption PSK Handling
+
+[[TODO: this section needs TLS stack implementers guidance]]
+
+On receipt of a `ClientHello` containing  PSK identity, OpenSSL appears to callback to the application first in order to allow the application to check if the PSK is an externally provisioned PSK: https://github.com/openssl/openssl/blob/master/ssl/statem/extensions_srvr.c#L1093. If the application cannot find the external PSK idenitty in its external cache, the TLS stack will then check its resumption cache. We need to document TLS stack vs. application implementers guidance about the sequencing of handling of External vs. Resumption PSKs.
 
 # IANA Considerations {#IANA}
 
