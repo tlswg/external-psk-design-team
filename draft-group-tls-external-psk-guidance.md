@@ -254,9 +254,9 @@ lacks guidance unlike user passwords.
 
 - Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
 
-- Secrets may be baked into or hardware or software device components, such as secure enclaves.
-
-- Where secrets are baked into hardware at manufacturing time, the secrets may be printed on labels or included in a Bill of Materials for ease of scanning or import into a server.
+- Some secrets may be baked into or hardware or software device components. Moreover, when this is done
+at manufacturing time, secrets may be printed on labels or included in a Bill of Materials for ease of
+scanning or import.
 
 ## Provisioning Constraints
 
