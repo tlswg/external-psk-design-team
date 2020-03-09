@@ -1,7 +1,7 @@
 ---
 title: Guidance for External PSK Usage in TLS
 abbrev: Guidance for External PSK Usage in TLS
-docname: draft-group-tls-external-psk-guidance-latest
+docname: draft-dt-tls-external-psk-guidance-latest
 category: info
 
 ipr: trust200902
@@ -14,11 +14,23 @@ pi: [toc, sortrefs, symrefs]
 
 author:
   -
-    ins: F. Bar
-    name: Foo Bar
-    organization: Baz, Inc.
-    email: foobar@baz.com
-
+    ins: R. Housley
+    name: Russ Housley
+    organization: Vigil Security
+    email: housley@vigilsec.com
+  -
+    ins: J. Hoyland
+    name: Jonathan Hoyland
+    organization: Cloudflare Ltd.
+    email: jonathan.hoyland@gmail.com
+  -
+    ins: M. Sethi
+    name: Mohit Sethi
+    organization: Ericsson
+    email: mohit@piuha.net
+  -
+    ins: C.A. Wood
+    name: Christopher A. Wood
 
 normative:
   RFC2119:
@@ -104,11 +116,15 @@ in various use cases to help meet these assumptions.
 
 # Introduction
 
-TODO
+This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS.
+It lists TLS security properties provided by PSKs under certain assumptions and
+demonstrates how violations of these assumptions lead to attacks. This document
+also discusses PSK use cases, provisioning processes, and TLS stack implementation
+support in the context of these assumptions. It provides advice for applications
+in various use cases to help meet these assumptions.
 
-## Applicability
-
-The guidance provided in this document is applicable across TLS {{RFC8446}}, DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
+The guidance provided in this document is applicable across TLS {{RFC8446}},
+DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
 
 # Conventions and Definitions
 
