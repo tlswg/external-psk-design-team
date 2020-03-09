@@ -341,12 +341,6 @@ string operators such as `strcmp` on the psk identity.
 - OpenSSL servers accept connections from clients that have a valid PSK even if the identity provided by
 the client is incorrect.
 
-### External PSK versus Resumption PSK Handling
-
-[[TODO: this section needs TLS stack implementers guidance]]
-
-On receipt of a `ClientHello` containing  PSK identity, OpenSSL appears to callback to the application first in order to allow the application to check if the PSK is an externally provisioned PSK: https://github.com/openssl/openssl/blob/master/ssl/statem/extensions_srvr.c#L1093. If the application cannot find the external PSK idenitty in its external cache, the TLS stack will then check its resumption cache. We need to document TLS stack vs. application implementers guidance about the sequencing of handling of External vs. Resumption PSKs.
-
 # IANA Considerations {#IANA}
 
 This document makes no IANA requests.
