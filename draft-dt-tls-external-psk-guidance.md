@@ -181,13 +181,13 @@ Applications MUST use external PSKs that adhere to the following requirements:
 1. Each PSK MUST be derived from at least 128 of entropy and MUST be at least 128-bits long unless the TLS handshake is being used with a separate key
 establishment mechanism such as a Diffie-Hellman exchange. This recommendation
 protects against passive attacks using exhaustive search of the PSK.
-1. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
+2. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
 that acts as both a client and a server MUST use distinct PSKs when acting as the client from
 when it is acting as the server. This prevents redirection attacks.
-1. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
+3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
 when configuring PSKs for each pair of TLS client and server. If a distinct importer is
 used for each pair, then this satisfies condition (2).
-1. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted
+4. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted
 after the imported keys have been generated. This protects an attacker from bootstrapping
 a compromise of one node into the ability to attack connections between any node; otherwise
 the attacker can recover the master key and then re-run the importer itself.
@@ -294,21 +294,12 @@ are validate to be between \[1, 16\] bytes.
 
 ### PSK Identity encoding and comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string
-and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when
-the identity is configured by human users). On the other hand, {{RFC7925}} advises implementations against
-assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations.
-TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque
-bytes (shown as opaque identity<1..2^16-1>).
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{RFC7925}} advises  implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations. TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>).
 
 Other assumptions unique to different stacks are listed below.
 
-- Implementations such as OpenSSL and mbedTLS nonetheless treat psk_identities as character strings and use
-string operators such as `strcmp` on the psk identity.
-- Implementations also assign default identities to PSKs (for example, the string 'Client_identity') if none are configured.
 - gnuTLS treats psk identities as usernames.
-- OpenSSL servers accept connections from clients that have a valid PSK even if the identity provided by
-the client is incorrect.
+
 
 # IANA Considerations {#IANA}
 
