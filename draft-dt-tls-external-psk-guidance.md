@@ -294,21 +294,12 @@ are validate to be between \[1, 16\] bytes.
 
 ### PSK Identity encoding and comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string
-and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when
-the identity is configured by human users). On the other hand, {{RFC7925}} advises implementations against
-assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations.
-TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque
-bytes (shown as opaque identity<1..2^16-1>).
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{RFC7925}} advises  implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations. TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>).
 
 Other assumptions unique to different stacks are listed below.
 
-- Implementations such as OpenSSL and mbedTLS nonetheless treat psk_identities as character strings and use
-string operators such as `strcmp` on the psk identity.
-- Implementations also assign default identities to PSKs (for example, the string 'Client_identity') if none are configured.
 - gnuTLS treats psk identities as usernames.
-- OpenSSL servers accept connections from clients that have a valid PSK even if the identity provided by
-the client is incorrect.
+
 
 # IANA Considerations {#IANA}
 
