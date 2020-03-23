@@ -193,11 +193,13 @@ entropy keys are only secure against active attack if a PAKE is used with TLS.
 
 # Recommendations for External PSK Usage
 
-Applications MUST use external PSKs that adhere to the following requirements:
+Applications MUST adhere to the following requirements for external PSKs:
 
-1. Each PSK MUST be derived from at least 128 of entropy and MUST be at least 128-bits long unless the TLS handshake is being used with a separate key
-establishment mechanism such as a Diffie-Hellman exchange. This recommendation
-protects against passive attacks using exhaustive search of the PSK.
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at
+least 128 bits long, and SHOULD be combined with a DH exchange for forward
+secrecy. Low entropy PSKs, i.e., those derived from less than 128
+bits of entropy, MUST be combined with a Password Authenticated Key Exchange
+(PAKE) mechanism.
 2. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
 that acts as both a client and a server MUST use distinct PSKs when acting as the client from
 when it is acting as the server. This prevents redirection attacks.
@@ -316,7 +318,6 @@ Other assumptions unique to different stacks are listed below.
 
 - gnuTLS treats psk identities as usernames.
 
-
 # IANA Considerations {#IANA}
 
 This document makes no IANA requests.
@@ -328,7 +329,7 @@ This document makes no IANA requests.
 This document is the output of the TLS External PSK Design Team, comprised of the following members:
 Benjamin Beurdouche,
 Björn Haase,
-Chris Wood,
+Christopher Wood,
 Colm MacCárthaigh,
 Eric Rescorla,
 Jonathan Hoyland,
