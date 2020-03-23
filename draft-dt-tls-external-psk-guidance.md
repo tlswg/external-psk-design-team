@@ -141,16 +141,17 @@ one fundamental property: each PSK is known to exactly one client and
 one server, and that these never switch roles.  If this assumption is
 violated, then the security properties of TLS are severely weakened.
 
-As discussed in {{use-cases}}, there are use cases where it is
-desirable for multiple clients or multiple servers share a PSK. If
-this is done naively by having all members share a common key, then
-TLS only authenticates the entire group, and the security of the
-overall system is inherently rather brittle. There are a number of
-obvious weaknesses here:
+{{use-cases}} discusses use cases where it is desirable for multiple clients or
+multiple servers share a PSK. If this is done naively by having all members
+share a common key, then TLS only authenticates the entire group, and the
+security of the overall system is inherently rather brittle. There are a
+number of obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-2. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).
-3. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.
+2. If a group member is compromised, then the attacker can impersonate any
+group member (this follows from property (1)).
+3. If PSK without DH is used, then compromise of any group member allows the
+attacker to passively read all traffic.
 
 In addition to these, a malicious non-member can reroute handshakes
 between honest group members to connect them in unintended ways, as
@@ -167,14 +168,30 @@ The attack proceeds as follows:
 5. The attacker redirects the `Finished` message to `C`.
 `C` has completed the handshake, ostensibly with `A`.
 
-This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
-attack also violates the downgrade protection property.  This rerouting is a type of identity misbinding attack
-{{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
-can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
-client to the server on the same endpoint.
+This attack violates the peer authentication property, and if `C` supports a
+weaker set of cipher suites than `B`, this attack also violates the downgrade
+protection property.  This rerouting is a type of identity misbinding attack
+{{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the
+rerouting attack against a group member that can act both as TLS server and
+client. In the Selfie attack, a malicious non-member reroutes a connection
+from the client to the server on the same endpoint.
+
+Entropy properties of external PSKs may also affect TLS security properties.
+In particular, if a high entropy PSK is used, then PSK-only key establishment
+modes are secure against both active and passive attack. However, they lack
+forward security. Forward security may be achieved by using a PSK-DH mode.
+
+In contrast, if a low entropy PSK is used, then PSK-only key establishment
+modes are subject to passive exhaustive search passive attacks which
+will reveal the traffic keys. PSK-DH modes are subject to active
+attacks in which the attacker impersonates one side. The exhaustive
+search phase of these attacks can be mounted offline if the attacker
+captures a single handshake using the PSK, but those attacks will
+not lead to compromise of the traffic keys for that connection
+because those also depend on the Diffie-Hellman (DH) exchange. Low
+entropy keys are only secure against active attack if a PAKE is used with TLS.
 
 # Recommendations for External PSK Usage
-
 
 Applications MUST use external PSKs that adhere to the following requirements:
 
@@ -191,7 +208,6 @@ used for each pair, then this satisfies condition (2).
 after the imported keys have been generated. This protects an attacker from bootstrapping
 a compromise of one node into the ability to attack connections between any node; otherwise
 the attacker can recover the master key and then re-run the importer itself.
-
 
 # Privacy Properties
 
