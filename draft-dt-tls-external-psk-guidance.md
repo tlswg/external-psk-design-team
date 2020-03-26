@@ -262,7 +262,7 @@ as is currently under discussion for EAP-TLS-PSK.
 
 Applications MUST use external PSKs that adhere to the following requirements:
 
-1. Each PSK MUST be derived from at least 128 of entropy and MUST be at least 128-bits long unless the TLS handshake is being used with a separate key establishment mechanism such as a Diffie-Hellman exchange. This recommendation protects against passive attacks using exhaustive search of the PSK.
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. Low entropy PSKs, i.e., those derived from less than 128 bits of entropy, MUST be combined with a Password Authenticated Key Exchange (PAKE) mechanism.
 2. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent that acts as both a client and a server MUST use distinct PSKs when acting as the client from when it is acting as the server. 
 3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}} when configuring PSKs for a pair of TLS client and server.
 4. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted after the imported keys have been generated. This protects an attacker from bootstrapping a compromise of one node into the ability to attack connections between any node; otherwise the attacker can recover the master key and then re-run the importer itself.
@@ -315,7 +315,7 @@ This document makes no IANA requests.
 This document is the output of the TLS External PSK Design Team, comprised of the following members:
 Benjamin Beurdouche,
 Björn Haase,
-Chris Wood,
+Christopher Wood,
 Colm MacCárthaigh,
 Eric Rescorla,
 Jonathan Hoyland,
