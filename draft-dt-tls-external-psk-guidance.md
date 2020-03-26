@@ -123,7 +123,7 @@ also discusses PSK use cases, provisioning processes, and TLS stack implementati
 support in the context of these assumptions. It provides advice for applications
 in various use cases to help meet these assumptions.
 
-The guidance provided in this document is applicable across TLS {{?RFC8446}},
+The guidance provided in this document is applicable across TLS {{!RFC8446}},
 DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
 
 # Conventions and Definitions
