@@ -35,11 +35,10 @@ author:
 
 normative:
   RFC2119:
-  RFC8446:
+
 
 informative:
   RFC6614:
-  RFC7925:
   RFC2865:
   Selfie:
      title: "Selfie: reflections on TLS 1.3 with PSK"
@@ -124,7 +123,7 @@ also discusses PSK use cases, provisioning processes, and TLS stack implementati
 support in the context of these assumptions. It provides advice for applications
 in various use cases to help meet these assumptions.
 
-The guidance provided in this document is applicable across TLS {{RFC8446}},
+The guidance provided in this document is applicable across TLS {{!RFC8446}},
 DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
 
 # Conventions and Definitions
@@ -138,20 +137,19 @@ when, and only when, they appear in all capitals, as shown here.
 
 The external PSK authentication mechanism in TLS implicitly assumes
 one fundamental property: each PSK is known to exactly one client and
-one server, and that these never switch roles.  If this assumption is
+one server, and that these never switch roles. If this assumption is
 violated, then the security properties of TLS are severely weakened.
 
-{{use-cases}} discusses use cases where it is desirable for multiple clients or
-multiple servers share a PSK. If this is done naively by having all members
-share a common key, then TLS only authenticates the entire group, and the
-security of the overall system is inherently rather brittle. There are a
-number of obvious weaknesses here:
+As discussed in {{use-cases}}, there are use cases where it is
+desirable for multiple clients or multiple servers share a PSK. If
+this is done naively by having all members share a common key, then
+TLS only authenticates the entire group, and the security of the
+overall system is inherently rather brittle. There are a number of
+obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-2. If a group member is compromised, then the attacker can impersonate any
-group member (this follows from property (1)).
-3. If PSK without DH is used, then compromise of any group member allows the
-attacker to passively read all traffic.
+2. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).
+3. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.
 
 In addition to these, a malicious non-member can reroute handshakes
 between honest group members to connect them in unintended ways, as
@@ -168,48 +166,18 @@ The attack proceeds as follows:
 5. The attacker redirects the `Finished` message to `C`.
 `C` has completed the handshake, ostensibly with `A`.
 
-This attack violates the peer authentication property, and if `C` supports a
-weaker set of cipher suites than `B`, this attack also violates the downgrade
-protection property.  This rerouting is a type of identity misbinding attack
-{{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the
-rerouting attack against a group member that can act both as TLS server and
-client. In the Selfie attack, a malicious non-member reroutes a connection
-from the client to the server on the same endpoint.
+This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
+attack also violates the downgrade protection property. This rerouting is a type of identity misbinding attack
+{{Krawczyk}}{{Sethi}}. Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
+can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
+client to the server on the same endpoint.
 
-Entropy properties of external PSKs may also affect TLS security properties.
-In particular, if a high entropy PSK is used, then PSK-only key establishment
-modes are secure against both active and passive attack. However, they lack
+Entropy properties of external PSKs may also affect TLS security properties. In particular, if a high entropy PSK is used, then PSK-only key establishment modes are secure against both active and passive attack. However, they lack
 forward security. Forward security may be achieved by using a PSK-DH mode.
+ 
+In contrast, if a low entropy PSK is used, then PSK-only key establishment modes are subject to passive exhaustive search passive attacks which will reveal the traffic keys. PSK-DH modes are subject to active attacks in which the attacker impersonates one side. The exhaustive search phase of these attacks can be mounted offline if the attacker captures a single handshake using the PSK, but those attacks will
+not lead to compromise of the traffic keys for that connection because those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only secure against active attack if a PAKE is used with TLS.
 
-In contrast, if a low entropy PSK is used, then PSK-only key establishment
-modes are subject to passive exhaustive search passive attacks which
-will reveal the traffic keys. PSK-DH modes are subject to active
-attacks in which the attacker impersonates one side. The exhaustive
-search phase of these attacks can be mounted offline if the attacker
-captures a single handshake using the PSK, but those attacks will
-not lead to compromise of the traffic keys for that connection
-because those also depend on the Diffie-Hellman (DH) exchange. Low
-entropy keys are only secure against active attack if a PAKE is used with TLS.
-
-# Recommendations for External PSK Usage
-
-Applications MUST adhere to the following requirements for external PSKs:
-
-1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at
-least 128 bits long, and SHOULD be combined with a DH exchange for forward
-secrecy. Low entropy PSKs, i.e., those derived from less than 128
-bits of entropy, MUST be combined with a Password Authenticated Key Exchange
-(PAKE) mechanism.
-2. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent
-that acts as both a client and a server MUST use distinct PSKs when acting as the client from
-when it is acting as the server. This prevents redirection attacks.
-3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
-when configuring PSKs for each pair of TLS client and server. If a distinct importer is
-used for each pair, then this satisfies condition (2).
-4. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted
-after the imported keys have been generated. This protects an attacker from bootstrapping
-a compromise of one node into the ability to attack connections between any node; otherwise
-the attacker can recover the master key and then re-run the importer itself.
 
 # Privacy Properties
 
@@ -227,7 +195,7 @@ this type of linkability is out of scope, as PSKs are explicitly designed to sup
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
 Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK is an integral
-part of the TLS version 1.3 specification {{RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
+part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
 It distinguishes these resumption PSKs from external PSKs which have been provisioned out-of-band (OOB).
 Below, we list some example use-cases where pair-wise external PSKs with TLS have been used for
 authentication.
@@ -242,7 +210,7 @@ connections with fast open (0-RTT data).
 
 - Certificateless server-to-server communication. Machine-to-machine communication may use externally provisioned PSKs, primarily for the purposes of establishing TLS connections without requiring the overhead of provisioning and managing PKI certificates.
 
-- Internet of Things (IoT) and devices with limited computational capabilities. {{RFC7925}}
+- Internet of Things (IoT) and devices with limited computational capabilities. {{?RFC7925}}
 defines TLS and DTLS profiles for resource-constrained devices and suggests the use of PSK
 ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the PSK mode of DTLS.
 
@@ -292,6 +260,16 @@ pair-wise shared keys to achieve this. As another example, some systems require 
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
 as is currently under discussion for EAP-TLS-PSK.
 
+# Recommendations for External PSK Usage
+
+Applications MUST use external PSKs that adhere to the following requirements:
+
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. Low entropy PSKs, i.e., those derived from less than 128 bits of entropy, MUST be combined with a Password Authenticated Key Exchange (PAKE) mechanism.
+2. Each PSK MUST NOT be shared between with more than two logical nodes. As a result, an agent that acts as both a client and a server MUST use distinct PSKs when acting as the client from when it is acting as the server. 
+3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}} when configuring PSKs for a pair of TLS client and server.
+4. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted after the imported keys have been generated. This protects an attacker from bootstrapping a compromise of one node into the ability to attack connections between any node; otherwise the attacker can recover the master key and then re-run the importer itself.
+
+
 ## Stack Interfaces
 
 Most major TLS implementations support external PSKs. And all have a common interface that
@@ -312,11 +290,17 @@ are validate to be between \[1, 16\] bytes.
 
 ### PSK Identity encoding and comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{RFC7925}} advises  implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operations. TLS version 1.3 {{RFC8446}} follows the same practice of specifying the psk identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>).
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is configured by human users). On the other hand, {{?RFC7925}} advises  implementations against assuming any structured format for PSK identities and recommends byte-by-byte comparison for any operation. TLS version 1.3 {{!RFC8446}} follows the same practice of specifying the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1> in the specification). {{?RFC8446}} also requires that the PSK identities are at least 1 byte and at the most 65535 bytes in length. Although {{!RFC8446}} does not place strict requirements on the format of PSK identities, we do however note that the format of PSK identities can vary depending on the deployment:
 
-Other assumptions unique to different stacks are listed below.
+- The PSK identity MAY be a user configured string when used in protocols like Extensible Authentication Protocol (EAP) {{?RFC3748}}. gnuTLS for example treats PSK identities as usernames.
+- PSK identities MAY have a domain name suffix for roaming and federation. 
+- Deployments should take care that the length of the PSK identity is sufficient to avoid obvious collisions. {{identity-collision}} discusses some implication of collisions between external and resumption PSKs.
 
-- gnuTLS treats psk identities as usernames.
+#### PSK Identity collisions {#identity-collision}
+
+# Security Considerations {#security-con}
+
+It is NOT RECOMMENDED to share the same PSK between more than one client and server. However, as discussed in {{use-cases}}, there are application scenarios that may rely on sharing the same PSK among multiple nodes. {{!I-D.ietf-tls-external-psk-importer}} helps in mitigating rerouting and selfie style reflection attacks when the PSK is shared among multiple nodes. This is achieved by correctly using the node identifiers in the ImportedIdentity.context construct specified in {{!I-D.ietf-tls-external-psk-importer}}. It is RECOMMENDED that each endpoint selects one globally unique identifier and uses it in all PSK handshakes. The unique identifier can, for example, be one of its MAC addresses, a 32-byte random number, or its Universally Unique IDentifier (UUID) {{?RFC4122}}. Each endpoint SHOULD know the identifier of the other endpoint with which its wants to connect and SHOULD compare it with the other endpoint’s identifier used in ImportedIdentity.context. It is however important to remember that endpoints sharing the same group PSK can always impersonate each other. 
 
 # IANA Considerations {#IANA}
 
