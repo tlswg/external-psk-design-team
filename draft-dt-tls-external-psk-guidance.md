@@ -137,7 +137,7 @@ when, and only when, they appear in all capitals, as shown here.
 
 The external PSK authentication mechanism in TLS implicitly assumes
 one fundamental property: each PSK is known to exactly one client and
-one server, and that these never switch roles.  If this assumption is
+one server, and that these never switch roles. If this assumption is
 violated, then the security properties of TLS are severely weakened.
 
 As discussed in {{use-cases}}, there are use cases where it is
@@ -167,12 +167,16 @@ The attack proceeds as follows:
 `C` has completed the handshake, ostensibly with `A`.
 
 This attack violates the peer authentication property, and if `C` supports a weaker set of cipher suites than `B`, this
-attack also violates the downgrade protection property.  This rerouting is a type of identity misbinding attack
-{{Krawczyk}}{{Sethi}}.  Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
+attack also violates the downgrade protection property. This rerouting is a type of identity misbinding attack
+{{Krawczyk}}{{Sethi}}. Selfie attack {{Selfie}} is a special case of the rerouting attack against a group member that
 can act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the
 client to the server on the same endpoint.
 
-
+Entropy properties of external PSKs may also affect TLS security properties. In particular, if a high entropy PSK is used, then PSK-only key establishment modes are secure against both active and passive attack. However, they lack
+forward security. Forward security may be achieved by using a PSK-DH mode.
+ 
+In contrast, if a low entropy PSK is used, then PSK-only key establishment modes are subject to passive exhaustive search passive attacks which will reveal the traffic keys. PSK-DH modes are subject to active attacks in which the attacker impersonates one side. The exhaustive search phase of these attacks can be mounted offline if the attacker captures a single handshake using the PSK, but those attacks will
+not lead to compromise of the traffic keys for that connection because those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only secure against active attack if a PAKE is used with TLS.
 
 
 # Privacy Properties
@@ -256,9 +260,7 @@ pair-wise shared keys to achieve this. As another example, some systems require 
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
 as is currently under discussion for EAP-TLS-PSK.
 
-
 # Recommendations for External PSK Usage
-
 
 Applications MUST use external PSKs that adhere to the following requirements:
 
@@ -267,7 +269,6 @@ Applications MUST use external PSKs that adhere to the following requirements:
 3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}} when configuring PSKs for a pair of TLS client and server.
 4. Where possible the master PSK (that which is fed into the importer) SHOULD be deleted after the imported keys have been generated. This protects an attacker from bootstrapping a compromise of one node into the ability to attack connections between any node; otherwise the attacker can recover the master key and then re-run the importer itself.
 
- {{!RFC8446}} mandates that each external PSK can only be used with a single hash function. This was done to simplify the protocol analysis. Using {{!I-D.ietf-tls-external-psk-importer}} can provide an additional benefit as it produces a set of candidate PSKs, each of which are bound to a specific KDF and hash function.
 
 ## Stack Interfaces
 
@@ -295,14 +296,13 @@ Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first conve
 - PSK identities MAY have a domain name suffix for roaming and federation. 
 - Deployments should take care that the length of the PSK identity is sufficient to avoid obvious collisions. {{identity-collision}} discusses some implication of collisions between external and resumption PSKs.
 
-
 #### PSK Identity collisions {#identity-collision}
 
 # Security Considerations {#security-con}
 
-It is NOT RECOMMENDED to share the same PSK between more than one client and server. However, as discussed in {{use-cases}}, there are application scenarios that may rely on sharing the same PSK among multiple nodes. {{!I-D.ietf-tls-external-psk-importer}} helps in mitigating selfie style reflection attacks if a pair of client and server can switch roles. This is achieved by correctly using the node identifiers in the ImportedIdentity.context construct as explained in Appendix B of {{!I-D.ietf-tls-external-psk-importer}}. When a PSK is shared between a client and server that can switch roles, it is not necessary to know the identifier(s) of the other endpoint. Instead, it is sufficient to check that the identifier of the other endpoint in context is not equal to any of one’s own identifiers. To simplify implementation of this check, it is RECOMMENDED that each endpoint selects one globally unique identifier and uses it in all PSK handshakes. The unique identifier can, for example, be one of its MAC addresses or a 32-byte random number. Alternatively, nodes can also use a Universally Unique IDentifier (UUID) URN {{?RFC4122}} as their identifier. Including node identifiers in the ImportedIdentity.context construct also ensures that condition (2) is met.
+It is NOT RECOMMENDED to share the same PSK between more than one client and server. However, as discussed in {{use-cases}}, there are application scenarios that may rely on sharing the same PSK among multiple nodes. {{!I-D.ietf-tls-external-psk-importer}} helps in mitigating selfie style reflection attacks if a pair of client and server can switch roles. This is achieved by correctly using the node identifiers in the ImportedIdentity.context construct as explained in Appendix B of {{!I-D.ietf-tls-external-psk-importer}}. When a PSK is shared between a client and server that can switch roles, it is not necessary to know the identifier(s) of the other endpoint. Instead, it is sufficient to check that the identifier of the other endpoint in context is not equal to any of one’s own identifiers. To simplify implementation of this check, it is RECOMMENDED that each endpoint selects one globally unique identifier and uses it in all PSK handshakes. The unique identifier can, for example, be one of its MAC addresses or a 32-byte random number. Alternatively, nodes can also use a Universally Unique IDentifier (UUID) URN {{?RFC4122}} as their identifier. 
 
-{{!I-D.ietf-tls-external-psk-importer}} MUST be used in these application scenarios to derive unique keys for each logical node pair. Using node identifiers in the ImportedIdentity.context construct can again help nodes to derive unique keys from the global PSK shared among all nodes. Unlike the case of a server and client pair that can switch roles, when the same PSK is shared among many nodes, the comparison with one’s own identifier will only prevent selfie attacks but not malicious rerouting of the connection to another group member. To prevent malicious rerouting in groups, each endpoint needs to know the identifier of the other endpoint with which they want to connect and compare it with the other endpoint’s identifier used in ImportedIdentity.context. Of course, this only prevents attacks by non-members; the endpoints that share the group key can always impersonate each other. 
+Unlike the case of a server and client pair that can switch roles, when the same PSK is shared among many nodes, the comparison with one’s own identifier will only prevent selfie attacks but not malicious rerouting of the connection to another group member. To prevent malicious rerouting in groups, each endpoint needs to know the identifier of the other endpoint with which they want to connect and compare it with the other endpoint’s identifier used in ImportedIdentity.context. Of course, this only prevents attacks by non-members; the endpoints that share the group key can always impersonate each other. 
 
 # IANA Considerations {#IANA}
 
