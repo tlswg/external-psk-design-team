@@ -141,7 +141,7 @@ one server, and that these never switch roles. If this assumption is
 violated, then the security properties of TLS are severely weakened.
 
 As discussed in {{use-cases}}, there are use cases where it is
-desirable for multiple clients or multiple servers share a PSK. If
+desirable for multiple clients or multiple servers to share a PSK. If
 this is done naively by having all members share a common key, then
 TLS only authenticates the entire group, and the security of the
 overall system is inherently rather brittle. There are a number of
@@ -197,7 +197,7 @@ Traditionally, TLS does little to keep PSK identity information private. For exa
 an adversary learns information about the external PSK or its identifier by virtue of it
 appearing in cleartext in a ClientHello. As a result, a passive adversary can link
 two or more connections together that use the same external PSK on the wire. Applications should
-take precautions when using external PSKs if these risks.
+take precautions when using external PSKs to mitigate these risks.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
 Specifically, servers can link successive connections that use the same external PSK together. Preventing
@@ -260,7 +260,7 @@ limited UI. For example, they may only have a numeric keypad or even less number
 approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production
 lacks guidance unlike user passwords.
 
-- Some devices are provisioned PSKs via an out-of-band, cloud-based syncing protocol.
+- Some devices provision PSKs via an out-of-band, cloud-based syncing protocol.
 
 - Some secrets may be baked into or hardware or software device components. Moreover, when this is done
 at manufacturing time, secrets may be printed on labels or included in a Bill of Materials for ease of
@@ -279,9 +279,10 @@ as is currently under discussion for EAP-TLS-PSK.
 Applications MUST use external PSKs that adhere to the following requirements:
 
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
-128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. Low
-entropy PSKs, i.e., those derived from less than 128 bits of entropy, MUST be
-combined with a Password Authenticated Key Exchange (PAKE) mechanism.
+128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As
+discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
+than 128 bits of entropy, are subject to attack and SHOULD be avoided. Low entropy
+key are only secure against active attack if a PAKE, and not a PSK, is used with TLS.
 2. Each PSK MUST NOT be shared between with more than two logical nodes. As a
 result, an agent that acts as both a client and a server MUST use distinct PSKs
 when acting as the client from when it is acting as the server.
@@ -295,21 +296,21 @@ re-run the importer itself.
 
 ## Stack Interfaces
 
-Most major TLS implementations support external PSKs. And all have a common interface that
-applications may use when supplying them for individual connections. Details about existing
-stacks at the time of writing are below.
+Most major TLS implementations support external PSKs. Stacks supporting external PSKs
+provide interfaces that applications may use when supplying them for individual connections.
+Details about existing stacks at the time of writing are below.
 
 - OpenSSL and BoringSSL: Applications specify support for external PSKs via distinct ciphersuites.
 They also then configure callbacks that are invoked for PSK selection during the handshake.
-These callbacks must provide a PSK identity (as a character string) and key (as a byte string).
-(If no identity is provided, a default one is assumed.)
-They are typically invoked with a PSK hint, i.e., the hint provided by the server as per {{?RFC4279}}.
-The PSK length is validated to be between \[1, 256\] bytes upon selection.
+These callbacks must provide a PSK identity and key. The exact format of the callback depends
+on the negotiated TLS protocol version with new callback functions added specifically to OpenSSL
+for TLS 1.3 {{!RFC8446}} PSK support. The PSK length is validated to be between \[1, 256\] bytes.
+The PSK identity may be up to 128 bytes long.
 - mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
-identity and value inline. Servers must implement callbacks similar to that of OpenSSL. PSK lengths
-are validate to be between \[1, 16\] bytes.
+identity and value inline. Servers must implement callbacks similar to that of OpenSSL. Both PSK
+identity and key lengths may be between \[1, 16\] bytes long.
 - gnuTLS: Applications configure PSK values, either as raw byte strings or
-hexadecimal strings. The PSK size is not validated.
+hexadecimal strings. The PSK identity and key size are not validated.
 - wolfSSL: Applications configure PSKs with callbacks similar to OpenSSL.
 
 ### PSK Identity encoding and comparison
@@ -333,7 +334,21 @@ PSK identities as usernames.
 - Deployments should take care that the length of the PSK identity is sufficient
 to avoid obvious collisions.
 
-[[OPEN ISSUE: discuss implication of collisions between  external and resumption PSKs.]]
+### PSK Identity Collisions
+
+It is possible, though unlikely, that an external PSK identity may clash with a
+resumption PSK identity. The TLS stack implementation and sequencing of PSK callbacks
+influences the application's behaviour when identity collisions occur. When a server
+receives a PSK identity in a TLS 1.3 ClientHello, OpenSSL, BoringSSL and mbedTLS 
+execute the application's registered callback function before checking the stack's
+internal session resumption cache. This means that if a PSK identity collision occurs,
+the application will be given precedence over how to handle the PSK.
+
+[[TODO.. the application still does not know if an identity collision occured or not.
+If we wanted to be 100% explicit, the stack would check its resumption cache and then
+callback the application indicating here is a PSK that has a cache hit, please check
+your external PSK DB, and let me know how to proceed. Seems like overkill for something
+that should not happen.]]
 
 # Security Considerations {#security-con}
 
