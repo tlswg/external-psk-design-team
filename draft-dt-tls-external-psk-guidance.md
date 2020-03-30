@@ -339,7 +339,7 @@ to avoid obvious collisions.
 It is possible, though unlikely, that an external PSK identity may clash with a
 resumption PSK identity. The TLS stack implementation and sequencing of PSK callbacks
 influences the application's behaviour when identity collisions occur. When a server
-receives a PSK identity in a TLS 1.3 ClientHello, OpenSSL, BoringSSL and mbedTLS 
+receives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks
 execute the application's registered callback function before checking the stack's
 internal session resumption cache. This means that if a PSK identity collision occurs,
 the application will be given precedence over how to handle the PSK.
