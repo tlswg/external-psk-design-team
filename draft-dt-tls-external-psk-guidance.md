@@ -344,11 +344,6 @@ execute the application's registered callback function before checking the stack
 internal session resumption cache. This means that if a PSK identity collision occurs,
 the application will be given precedence over how to handle the PSK.
 
-[[TODO.. the application still does not know if an identity collision occured or not.
-If we wanted to be 100% explicit, the stack would check its resumption cache and then
-callback the application indicating here is a PSK that has a cache hit, please check
-your external PSK DB, and let me know how to proceed. Seems like overkill for something
-that should not happen.]]
 
 # Security Considerations {#security-con}
 
