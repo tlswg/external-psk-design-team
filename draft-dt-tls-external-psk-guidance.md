@@ -282,7 +282,7 @@ Applications MUST use external PSKs that adhere to the following requirements:
 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As
 discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
 than 128 bits of entropy, are subject to attack and SHOULD be avoided. Low entropy
-key are only secure against active attack if a PAKE, and not a PSK, is used with TLS.
+keys are only secure against active attack if a Password Authenticated Key Exchange (PAKE) is used with TLS.
 2. Each PSK MUST NOT be shared between with more than two logical nodes. As a
 result, an agent that acts as both a client and a server MUST use distinct PSKs
 when acting as the client from when it is acting as the server.
