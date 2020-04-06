@@ -313,7 +313,7 @@ identity and key lengths may be between \[1, 16\] bytes long.
 hexadecimal strings. The PSK identity and key size are not validated.
 - wolfSSL: Applications configure PSKs with callbacks similar to OpenSSL.
 
-### PSK Identity encoding and comparison
+### PSK Identity Encoding and Comparison
 
 Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted
 to a character string and then encoded to octets using UTF-8. This was done to avoid
@@ -343,7 +343,6 @@ receives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks
 execute the application's registered callback function before checking the stack's
 internal session resumption cache. This means that if a PSK identity collision occurs,
 the application will be given precedence over how to handle the PSK.
-
 
 # Security Considerations {#security-con}
 
