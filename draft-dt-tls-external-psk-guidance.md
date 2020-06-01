@@ -133,6 +133,14 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 document are to be interpreted as described in BCP 14 {{RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
+# Notation
+
+For purposes of this document, a "logical node" is a computing presence that
+other parties can interact with via the TLS protocol. A logical node could
+potentially be realized with multiple physical instances operating under common
+administrative control, e.g., a server farm. An "endpoint" is a client or server
+participating in a connection.
+
 # PSK Security Properties {#sec-properties}
 
 The external PSK authentication mechanism in TLS implicitly assumes
@@ -281,13 +289,25 @@ Applications MUST use external PSKs that adhere to the following requirements:
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As
 discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
-than 128 bits of entropy, are subject to attack and SHOULD be avoided. Low entropy
-keys are only secure against active attack if a Password Authenticated Key Exchange (PAKE) is used with TLS.
-2. Each PSK MUST NOT be shared between with more than two logical nodes. As a
-result, an agent that acts as both a client and a server MUST use distinct PSKs
-when acting as the client from when it is acting as the server.
+than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
+low-entropy keys are available, then key establishment mechanisms such as Password
+Authenticated Key Exchange (PAKE) that mitigate the risk of offline dictionary
+attacks SHOULD be employed. Note that these mechanisms do not necessarily follow
+the same architecture as the ordinary process for incorporating EPSKs described
+in this draft.
+
+2. Unless other accommodations are made, each PSK MUST be restricted in
+its use to at most two logical nodes: one logical node in a TLS client
+role and one logical node in a TLS server role. (The two logical nodes
+MAY be the same, in different roles.) Two acceptable accommodations
+are described in {{!I-D.ietf-tls-external-psk-importer}}: (1) exchanging
+client and server identifiers over the TLS connection after the
+handshake, and (2) incorporating identifiers for both the client and the
+server into the context string for an EPSK importer.
+
 3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
 when configuring PSKs for a pair of TLS client and server.
+
 4. Where possible the master PSK (that which is fed into the importer) SHOULD be
 deleted after the imported keys have been generated. This protects an attacker
 from bootstrapping a compromise of one node into the ability to attack connections
