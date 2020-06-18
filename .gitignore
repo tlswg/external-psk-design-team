@@ -9,11 +9,8 @@
 .tags
 .targets.mk
 /*-[0-9][0-9].xml
-draft-group-tls-external-psk-guidance.xml
-issues.json
-lib
-pulls.json
+archive.json
 report.xml
 venv/
 lib
-draft-dt-tls-external-psk-guidance.xml
+draft-ietf-tls-external-psk-guidance.xml

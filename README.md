@@ -1,10 +1,10 @@
 # Guidance for External PSK Usage in TLS
 
-This is the working area for the individual Internet-Draft, "Guidance for External PSK Usage in TLS".
+This is the working area for the IETF [TLS Working Group](https://datatracker.ietf.org/wg/tls/documents/) Internet-Draft, "Guidance for External PSK Usage in TLS".
 
-* [Editor's Copy](https://tlswg.github.io/external-psk-design-team/#go.draft-dt-tls-external-psk-guidance.html)
-* [Individual Draft](https://tools.ietf.org/html/draft-dt-tls-external-psk-guidance)
-* [Compare Editor's Copy to Individual Draft](https://tlswg.github.io/external-psk-design-team/#go.draft-dt-tls-external-psk-guidance.diff)
+* [Editor's Copy](https://tlswg.github.io/external-psk-design-team/#go.draft-ietf-tls-external-psk-guidance.html)
+* [Working Group Draft](https://tools.ietf.org/html/draft-ietf-tls-external-psk-guidance)
+* [Compare Editor's Copy to Working Group Draft](https://tlswg.github.io/external-psk-design-team/#go.draft-ietf-tls-external-psk-guidance.diff)
 
 ## Building the Draft
 
