@@ -1,7 +1,7 @@
 ---
 title: Guidance for External PSK Usage in TLS
 abbrev: Guidance for External PSK Usage in TLS
-docname: draft-dt-tls-external-psk-guidance-latest
+docname: draft-ietf-tls-external-psk-guidance-latest
 category: info
 
 ipr: trust200902
@@ -31,6 +31,7 @@ author:
   -
     ins: C.A. Wood
     name: Christopher A. Wood
+    organization: Cloudflare Ltd.
     email: caw@heapingbits.net
 
 normative:
