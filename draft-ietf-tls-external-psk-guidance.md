@@ -281,7 +281,7 @@ PSK provisioning systems are often constrained in application-specific ways. For
 provisioning is to ensure that each pair of nodes has a unique key pair, some systems do not want to distribute
 pair-wise shared keys to achieve this. As another example, some systems require the provisioning process to embed
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
-as is currently under discussion for EAP-TLS-PSK.
+as is currently under discussion for EAP-TLS-PSK {{!I-D.mattsson-emu-eap-tls-psk}}.
 
 # Recommendations for External PSK Usage
 
