@@ -125,13 +125,13 @@ support in the context of these assumptions. It provides advice for applications
 in various use cases to help meet these assumptions.
 
 The guidance provided in this document is applicable across TLS {{!RFC8446}},
-DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{!I-D.rescorla-tls-ctls}}.
+DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
 
 # Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{RFC2119}} {{!RFC8174}}
+document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
 # Notation
@@ -237,8 +237,8 @@ defines TLS and DTLS profiles for resource-constrained devices and suggests the 
 ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine to
 Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the PSK mode of DTLS.
 
-- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified
-in {{RFC6614}}.
+- Use of PSK ciphersuites are optional when securing RADIUS {{?RFC2865}} with TLS as specified
+in {{?RFC6614}}.
 
 - The Generic Authentication Architecture (GAA) defined by 3GGP mentions that TLS-PSK can be used
 between a server and user equipment for authentication {{GAA}}.
@@ -281,7 +281,7 @@ PSK provisioning systems are often constrained in application-specific ways. For
 provisioning is to ensure that each pair of nodes has a unique key pair, some systems do not want to distribute
 pair-wise shared keys to achieve this. As another example, some systems require the provisioning process to embed
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
-as is currently under discussion for EAP-TLS-PSK {{!I-D.mattsson-emu-eap-tls-psk}}.
+as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk}}.
 
 # Recommendations for External PSK Usage
 
@@ -343,7 +343,7 @@ On the other hand, {{?RFC7925}} advises  implementations against assuming any
 structured format for PSK identities and recommends byte-by-byte comparison for
 any operation. TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
 the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>
-in the specification). {{?RFC8446}} also requires that the PSK identities are at
+in the specification). {{!RFC8446}} also requires that the PSK identities are at
 least 1 byte and at the most 65535 bytes in length. Although {{!RFC8446}} does not
 place strict requirements on the format of PSK identities, we do however note that
 the format of PSK identities can vary depending on the deployment:
