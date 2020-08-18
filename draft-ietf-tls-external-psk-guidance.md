@@ -197,7 +197,8 @@ impersonates one side. The exhaustive search phase of these attacks can be mount
 offline if the attacker captures a single handshake using the PSK, but those
 attacks will not lead to compromise of the traffic keys for that connection because
 those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only
-secure against active attack if a PAKE is used with TLS.
+secure against active attack if a PAKE is used with TLS. The Crypto Forum Research
+ Group (CFRG) is currently working on specifying a standard PAKE (see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.krawczyk-cfrg-opaque}}).
 
 # Privacy Properties
 
