@@ -175,7 +175,7 @@ The attack proceeds as follows:
 4. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
 5. The attacker redirects the `Finished` message to `C`.
-`C` has completed the handshake, ostensibly with `A`.
+`C` has completed the handshake with `A`.
 
 This attack violates the peer authentication property, and if `C` supports a
 weaker set of cipher suites than `B`, this attack also violates the downgrade
