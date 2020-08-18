@@ -354,7 +354,7 @@ Extensible Authentication Protocol (EAP) {{?RFC3748}}. gnuTLS for example treats
 PSK identities as usernames.
 - PSK identities MAY have a domain name suffix for roaming and federation.
 - Deployments should take care that the length of the PSK identity is sufficient
-to avoid obvious collisions.
+to avoid collisions.
 
 ### PSK Identity Collisions
 
