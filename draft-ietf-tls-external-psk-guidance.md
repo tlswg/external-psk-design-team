@@ -227,7 +227,7 @@ online protocol.
 
 - Intra-data-center communication. Machine-to-machine communication within a single data center
 or PoP may use externally provisioned PSKs, primarily for the purposes of supporting TLS
-connections with early data (a.k.a. 0-RTT data).
+connections with early data.
 
 - Certificateless server-to-server communication. Machine-to-machine communication
 may use externally provisioned PSKs, primarily for the purposes of establishing TLS
