@@ -218,7 +218,7 @@ this type of linkability is out of scope, as PSKs are explicitly designed to sup
 Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK is an integral
 part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
 It distinguishes these resumption PSKs from external PSKs which have been provisioned out-of-band (OOB).
-Below, we list some example use-cases where pair-wise external PSKs (i.e. external PSKs that are shared
+Below, we list some example use-cases where pair-wise external PSKs (i.e., external PSKs that are shared
 between only one server and one client) have been used for authentication in TLS.
 
 - Device-to-device communication with out-of-band synchronized keys. PSKs provisioned out-of-band
