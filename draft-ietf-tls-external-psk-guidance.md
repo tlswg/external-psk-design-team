@@ -286,7 +286,7 @@ as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk
 
 # Recommendations for External PSK Usage
 
-Applications MUST use external PSKs that adhere to the following requirements:
+If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
 
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As
