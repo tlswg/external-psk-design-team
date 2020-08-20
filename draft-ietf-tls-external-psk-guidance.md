@@ -117,12 +117,13 @@ in various use cases to help meet these assumptions.
 
 # Introduction
 
-This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS.
-It lists TLS security properties provided by PSKs under certain assumptions and
-demonstrates how violations of these assumptions lead to attacks. This document
-also discusses PSK use cases, provisioning processes, and TLS stack implementation
-support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions.
+There are many resources that provide usage guidance on user passwords. However, there is
+no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
+that gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates
+how violations of these assumptions lead to attacks. This document also discusses PSK use
+cases, provisioning processes, and TLS stack implementation support in the context of these
+assumptions. It provides advice for applications in various use cases to help meet these
+assumptions.
 
 The guidance provided in this document is applicable across TLS {{!RFC8446}},
 DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
@@ -215,7 +216,7 @@ this type of linkability is out of scope, as PSKs are explicitly designed to sup
 
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
-Pre-shared Key (PSK) ciphersuites were first specified for TLS in 2005. Now, PSK is an integral
+PSK ciphersuites were first specified for TLS in 2005. Now, PSKs are an integral
 part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
 It distinguishes these resumption PSKs from external PSKs which have been provisioned out-of-band (OOB).
 Below, we list some example use-cases where pair-wise external PSKs with TLS have been used for
@@ -267,8 +268,7 @@ authentication with the usage of a certificate after successfully establishing t
 approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU)
 approach with a device completely unprotected before the first login did take place). Many devices have very
 limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU
-approach is not suitable, entering the key would require typing it on a constrained UI. Moreover, PSK production
-lacks guidance unlike user passwords.
+approach is not suitable, entering the key would require typing it on a constrained UI.
 
 - Some devices provision PSKs via an out-of-band, cloud-based syncing protocol.
 
