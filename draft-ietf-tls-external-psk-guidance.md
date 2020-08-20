@@ -211,7 +211,7 @@ these risks require analysis and are out of scope for this document.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
 Specifically, servers can link successive connections that use the same external PSK together. Preventing
-this type of linkability is out of scope, as PSKs are explicitly designed to support mutual authentication.
+this type of linkability is out of scope.
 
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
