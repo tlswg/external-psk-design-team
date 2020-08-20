@@ -206,8 +206,8 @@ PSK privacy properties are orthogonal to security properties described in {{sec-
 Traditionally, TLS does little to keep PSK identity information private. For example,
 an adversary learns information about the external PSK or its identifier by virtue of it
 appearing in cleartext in a ClientHello. As a result, a passive adversary can link
-two or more connections together that use the same external PSK on the wire. How best to
-mitigate these risks remains an open problem.
+two or more connections together that use the same external PSK on the wire. Techniques for mitigating
+these risks require analysis and are out of scope for this document.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
 Specifically, servers can link successive connections that use the same external PSK together. Preventing
