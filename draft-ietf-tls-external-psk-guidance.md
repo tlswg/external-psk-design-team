@@ -307,8 +307,10 @@ client and server identifiers over the TLS connection after the
 handshake, and (2) incorporating identifiers for both the client and the
 server into the context string for an EPSK importer.
 
-3. Nodes SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
-when configuring PSKs for a pair of TLS client and server.
+3. Nodes using TLS 1.3 SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
+when configuring PSKs for a client-server pair. Importers make provisioning
+external PSKs easier and less error prone by generating a PSK for each hash function a
+node supports, as required in TLS 1.3 in order to satisfy certain security assumptions.
 
 4. Where possible the master PSK (that which is fed into the importer) SHOULD be
 deleted after the imported keys have been generated. This protects an attacker
