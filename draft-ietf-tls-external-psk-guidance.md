@@ -233,10 +233,12 @@ connections with early data.
 may use externally provisioned PSKs, primarily for the purposes of establishing TLS
 connections without requiring the overhead of provisioning and managing PKI certificates.
 
-- Internet of Things (IoT) and devices with limited computational capabilities. {{?RFC7925}}
-defines TLS and DTLS profiles for resource-constrained devices and suggests the use of PSK
-ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine to
-Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the PSK mode of DTLS.
+- Internet of Things (IoT) and devices with limited computational capabilities. {{?RFC7925}} defines TLS and DTLS
+  profiles for resource-constrained devices and suggests the use of PSK ciphersuites for compliant devices. The Open
+Mobile Alliance Lightweight Machine to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support
+the PSK mode of DTLS. If all devices may communicate with each other then to achieve full security n squared keys need
+to be provisioned. If this would be overly burdensome it is possible to achieve some level of security by distrubuting n
+keys, and operating a central server.
 
 - Use of PSK ciphersuites are optional when securing RADIUS {{?RFC2865}} with TLS as specified
 in {{?RFC6614}}.
@@ -255,11 +257,14 @@ distributed out-of-band to the group participants. Members can then establish pe
 with each other using the external PSK. It is important to note that any node of the group can behave
 as a TLS client or server.
 
-- Internet of Things (IoT). In this use-case, resource-constrained IoT devices act as TLS clients and share the
-same PSK. The devices use this PSK for quickly establishing connections with a central server. Such a scheme
-ensures that the client IoT devices are legitimate members of the system. To perform rare system specific
-operations that require a higher security level, the central server can request resource-intensive client
-authentication with the usage of a certificate after successfully establishing the connection with a PSK.
+- Internet of Things (IoT). In this use-case, resource-constrained IoT devices act as TLS clients and share the same
+  PSK. The devices use this PSK for quickly establishing connections with a central server. Such a scheme ensures that
+the client IoT devices are legitimate members of the system. To perform rare system specific operations that require a
+higher security level, the central server can request resource-intensive client authentication with the usage of a
+certificate after successfully establishing the connection with a PSK. The use of a single PSK for multiple devices in
+this way is not recommended, but may be seen in cases where there is a large turnover in the number of devices. The use
+of connection upgrades may be employed where it is not known in advance whether the higher level of authentication is
+necessary, or to bind a particular action to a particular device.
 
 ## Provisioning Examples
 
