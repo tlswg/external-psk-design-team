@@ -284,7 +284,7 @@ pair-wise shared keys to achieve this. As another example, some systems require 
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
 as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk}}.
 
-# Recommendations for External PSK Usage
+# Recommendations for External PSK Usage {#recommendations}
 
 If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
 
