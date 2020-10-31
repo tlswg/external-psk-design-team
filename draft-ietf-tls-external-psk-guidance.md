@@ -117,8 +117,8 @@ in various use cases to help meet these assumptions.
 
 # Introduction
 
-There are many resources that provide usage guidance on user passwords. However, there is
-no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
+There are many resources that provide guidance for password generation and verification aimed towards improving security. 
+However, there is no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
 that gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates
 how violations of these assumptions lead to attacks. This document also discusses PSK use
 cases, provisioning processes, and TLS stack implementation support in the context of these
