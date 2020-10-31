@@ -288,8 +288,7 @@ as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk
 
 If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
 
-1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be used in
-   TLS's PSK Key Exchange mode for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
 derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are
 available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk
 of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
