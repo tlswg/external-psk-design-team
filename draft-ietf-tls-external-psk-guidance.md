@@ -288,15 +288,12 @@ as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk
 
 If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
 
-1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
-128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As
-discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
-than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
-low-entropy keys are available, then key establishment mechanisms such as Password
-Authenticated Key Exchange (PAKE) that mitigate the risk of offline dictionary
-attacks SHOULD be employed. Note that these mechanisms do not necessarily follow
-the same architecture as the ordinary process for incorporating EPSKs described
-in this draft.
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
+derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are
+available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk
+of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
+that these mechanisms will not necessarily follow the same architecture as the process for incorporating EPSKs described
+in {{!I-D.ietf-tls-external-psk-importer}}.
 
 2. Unless other accommodations are made, each PSK MUST be restricted in
 its use to at most two logical nodes: one logical node in a TLS client
@@ -337,12 +334,13 @@ hexadecimal strings. The PSK identity and key size are not validated.
 
 ### PSK Identity Encoding and Comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted
-to a character string and then encoded to octets using UTF-8. This was done to avoid
-interoperability problems (especially when the identity is configured by human users).
-On the other hand, {{?RFC7925}} advises  implementations against assuming any
-structured format for PSK identities and recommends byte-by-byte comparison for
-any operation. TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then
+encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is
+configured by human users).  On the other hand, {{?RFC7925}} advises  implementations against assuming any structured
+format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identites are configured
+manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
+
+TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
 the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>
 in the specification). {{!RFC8446}} also requires that the PSK identities are at
 least 1 byte and at the most 65535 bytes in length. Although {{!RFC8446}} does not
