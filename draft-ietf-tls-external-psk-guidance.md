@@ -117,7 +117,7 @@ in various use cases to help meet these assumptions.
 
 # Introduction
 
-There are many resources that provide guidance for password generation and verification aimed towards improving security. 
+There are many resources that provide guidance for password generation and verification aimed towards improving security.
 However, there is no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
 that gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates
 how violations of these assumptions lead to attacks. This document also discusses PSK use
@@ -309,14 +309,14 @@ server into the context string for an EPSK importer.
 
 3. Nodes using TLS 1.3 SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
 when configuring PSKs for a client-server pair. Importers make provisioning
-external PSKs easier and less error prone by deriving a unique, imported PSK from the 
+external PSKs easier and less error prone by deriving a unique, imported PSK from the
 external PSK for each key derivation function a node supports. See the Security Considerations
 in {{!I-D.ietf-tls-external-psk-importer}} for more information.
 
-4. Where possible the master PSK (that which is fed into the importer) SHOULD be
+4. Where possible the main PSK (that which is fed into the importer) SHOULD be
 deleted after the imported keys have been generated. This protects an attacker
 from bootstrapping a compromise of one node into the ability to attack connections
-between any node; otherwise the attacker can recover the master key and then
+between any node; otherwise the attacker can recover the main key and then
 re-run the importer itself.
 
 ## Stack Interfaces
