@@ -106,23 +106,26 @@ informative:
 
 --- abstract
 
-This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS.
+This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS. 
 It lists TLS security properties provided by PSKs under certain assumptions and
-demonstrates how violations of these assumptions lead to attacks. This document
-also discusses PSK use cases, provisioning processes, and TLS stack implementation
-support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions.
+demonstrates how violations of these assumptions lead to attacks. This
+document also discusses security properties which are not provided by PSKs and
+examines PSK use cases, provisioning processes, and TLS stack implementation
+support. Finally, it provides advice for applications in various use cases to
+help help meet these assumptions.
 
 --- middle
 
 # Introduction
 
-There are many resources that provide guidance for password generation and verification aimed towards improving security.
-However, there is no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
-that gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates
-how violations of these assumptions lead to attacks. This document also discusses PSK use
-cases, provisioning processes, and TLS stack implementation support in the context of these
-assumptions. It provides advice for applications in various use cases to help meet these
+There are many resources that provide guidance for password generation and
+verification aimed towards improving security. However, there is no such
+equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims
+to reduce that gap. It lists TLS security properties provided by PSKs under
+certain assumptions and demonstrates how violations of these assumptions lead to
+attacks. This document also discusses PSK use cases, provisioning processes,
+and TLS stack implementation support in the context of these assumptions. It
+provides advice for applications in various use cases to help meet these
 assumptions.
 
 The guidance provided in this document is applicable across TLS {{!RFC8446}},
@@ -150,23 +153,33 @@ one fundamental property: each PSK is known to exactly one client and
 one server, and that these never switch roles. If this assumption is
 violated, then the security properties of TLS are severely weakened.
 
-As discussed in {{use-cases}}, there are use cases where it is
-desirable for multiple clients or multiple servers to share a PSK. If
-this is done naively by having all members share a common key, then
-TLS only authenticates the entire group, and the security of the
-overall system is inherently rather brittle. There are a number of
-obvious weaknesses here:
+As discussed in {{use-cases}}, there are use cases where multiple clients or
+multiple servers to share a PSK. If this is done naively by having all
+members share a common key, then TLS only authenticates the entire group, and
+the security of the overall system is inherently rather brittle. There are a
+number of obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-2. If a group member is compromised, then the attacker can impersonate any
-group member (this follows from property (1)).
-3. If PSK without DH is used, then compromise of any group member allows the
-attacker to passively read all traffic.
+2. If PSK with DH is used, then a group member that actively MITM the handshakes
+and the following traffic can eavesdrop or modify the traffic.
+3. If PSK without DH is used, then any group member can passively read all
+traffic.
+4. If a group member is compromised, then the attacker can perform all the
+above.
+5. A malicious non-member can reroute handshakes between honest group members to
+connect them in unintended ways, as detailed below. (Note that this class of
+attack is not possible if each member uses the SNI extension {{!RFC6066}} and
+terminates the connection on mismatch. See {{Selfie}} for details.)
 
-In addition to these, a malicious non-member can reroute handshakes
-between honest group members to connect them in unintended ways, as
-detailed below. (Note that this class of attack is not possible if each member uses
-the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
+
+
+In addition to these, sharing a PSK across nodes negatively affects
+deployments since:
+- Revocation of individual group members is not possible without changing the
+authentication key for all members.
+- Network activity logging becomes less useful as messages can only be tied to
+the group and not individual members (or pair of members).
+
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
@@ -206,10 +219,15 @@ secure against active attack if a PAKE is used with TLS. The Crypto Forum Resear
 
 PSK privacy properties are orthogonal to security properties described in {{sec-properties}}.
 Traditionally, TLS does little to keep PSK identity information private. For example,
-an adversary learns information about the external PSK or its identifier by virtue of it
-appearing in cleartext in a ClientHello. As a result, a passive adversary can link
-two or more connections together that use the same external PSK on the wire. Techniques for mitigating
-these risks require analysis and are out of scope for this document.
+an adversary learns information about the external PSK or its identifier by
+virtue of it appearing in cleartext in a ClientHello. As a result, a passive
+adversary can link two or more connections together that use the same external
+PSK on the wire. Depending on the PSK identity, a passive attacker may also be
+able to identify the device, person, or enterprise running the TLS client or TLS
+server. An active attacker can also use the PSK identity to oppress handshakes or
+application data from a specific device/user by blocking, delaying, or
+rate-limit traffic. Techniques for mitigating these risks require analysis and
+are out of scope for this document.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
 Specifically, servers can link successive connections that use the same external PSK together. Preventing
@@ -218,9 +236,10 @@ this type of linkability is out of scope.
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
 PSK ciphersuites were first specified for TLS in 2005. Now, PSKs are an integral
-part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
-It distinguishes these resumption PSKs from external PSKs which have been provisioned out-of-band (OOB).
-Below, we list some example use-cases where pair-wise external PSKs (i.e., external PSKs that are shared
+part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs
+for session resumption. It distinguishes these resumption PSKs from external
+PSKs which have been provisioned out-of-band (OOB). Below, we list some example
+use-cases where pair-wise external PSKs (i.e., external PSKs that are shared
 between only one server and one client) have been used for authentication in TLS.
 
 - Device-to-device communication with out-of-band synchronized keys. PSKs provisioned out-of-band
@@ -235,30 +254,40 @@ connections with early data.
 may use externally provisioned PSKs, primarily for the purposes of establishing TLS
 connections without requiring the overhead of provisioning and managing PKI certificates.
 
-- Internet of Things (IoT) and devices with limited computational capabilities. {{?RFC7925}} defines TLS and DTLS
-  profiles for resource-constrained devices and suggests the use of PSK ciphersuites for compliant devices. The Open
-Mobile Alliance Lightweight Machine to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support
+- Internet of Things (IoT) and devices with limited storage and computational
+capabilities. {{?RFC7925}} defines TLS and DTLS profiles for
+resource-constrained devices and discusses the use of PSK ciphersuites
+for compliant devices. The Open Mobile Alliance Lightweight Machine to Machine
+Technical Specification {{LwM2M}} states that LwM2M servers MUST support
 the PSK mode of DTLS.
 
 - Use of PSK ciphersuites are optional when securing RADIUS {{?RFC2865}} with TLS as specified
 in {{?RFC6614}}.
 
-- The Generic Authentication Architecture (GAA) defined by 3GGP mentions that TLS-PSK can be used
-between a server and user equipment for authentication {{GAA}}.
+- The Generic Authentication Architecture (GAA) defined by 3GGP mentions that
+TLS-PSK can be used between a server and user equipment for authentication {
+{GAA}}.
 
-- Smart Cards. The electronic German ID (eID) card supports authentication of a card holder to
-online services with TLS-PSK {{SmartCard}}.
+- Smart Cards. The electronic German ID (eID) card supports authentication of a
+card holder to online services with TLS-PSK {{SmartCard}}.
 
-There are also use cases where PSKs are shared between more than two entities. Some examples below
-(as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
+- Quantum resistance: Some deployments may use PSKs (or combine them with
+certificate-based authentication) because of the protection they provide against
+quantum computers.
 
-- Group chats. In this use-case, group participants may be provisioned an external PSK out-of-band for establishing
-  authenticated connections with other members of the group.
+There are also use cases where PSKs are shared between more than two entities.
+Some examples below (as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
 
-- Internet of Things (IoT) and devices with limited computational capabilities. Many PSK provisioning examples are
-  possible in this use-case. For example, in a given setting, IoT devices may all share the same PSK and use it to
-communicate with a central server (one key for n devices), have their own key for communicating with a central server (n
-keys for n devices), or have pairwise keys for communicating with each other (n^2 keys for n devices).
+- Group chats. In this use-case, group participants may be provisioned an
+external PSK out-of-band for establishing authenticated connections with other
+members of the group.
+
+- Internet of Things (IoT) and devices with limited computational capabilities.
+Many PSK provisioning examples are possible in this use-case. For example, in a
+given setting, IoT devices may all share the same PSK and use it to
+communicate with a central server (one key for n devices), have their own key
+for communicating with a central server (n keys for n devices), or have pairwise
+keys for communicating with each other (n^2 keys for n devices).
 
 The exact provisioning process depends on the system requirements and threat model. Generally, use of
 a single PSK shared between more than one node is not recommended, even if other accommodations
@@ -267,11 +296,13 @@ See {{recommendations}}.
 
 ## Provisioning Examples
 
-- Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following
-approaches: typing the PSK into the devices, or via web server masks (using a Trust On First Use (TOFU)
-approach with a device completely unprotected before the first login did take place). Many devices have very
-limited UI. For example, they may only have a numeric keypad or even less number of buttons. When the TOFU
-approach is not suitable, entering the key would require typing it on a constrained UI.
+- Many industrial protocols assume that PSKs are distributed and assigned
+manually via one of the following approaches: typing the PSK into the devices,
+or via web server masks (using a Trust On First Use (TOFU) approach with a
+device completely unprotected before the first login did take place). Many
+devices have very limited UI. For example, they may only have a numeric keypad
+or even less number of buttons. When the TOFU approach is not suitable, entering
+the key would require typing it on a constrained UI.
 
 - Some devices provision PSKs via an out-of-band, cloud-based syncing protocol.
 
@@ -281,22 +312,30 @@ scanning or import.
 
 ## Provisioning Constraints
 
-PSK provisioning systems are often constrained in application-specific ways. For example, although one goal of
-provisioning is to ensure that each pair of nodes has a unique key pair, some systems do not want to distribute
-pair-wise shared keys to achieve this. As another example, some systems require the provisioning process to embed
-application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
-as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk}}.
+PSK provisioning systems are often constrained in application-specific ways. For
+example, although one goal of provisioning is to ensure that each pair of nodes
+has a unique key pair, some systems do not want to distribute pair-wise shared
+keys to achieve this. As another example, some systems require the provisioning
+process to embed application-specific information in either PSKs or their
+identities. Identities may sometimes need to be routable, as is currently under
+discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk}}.
 
 # Recommendations for External PSK Usage {#recommendations}
 
-If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
+If an application uses external PSKs, the external PSKs MUST adhere to the
+following requirements:
 
-1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
-derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are
-available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk
-of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
-that these mechanisms will not necessarily follow the same architecture as the process for incorporating EPSKs described
-in {{!I-D.ietf-tls-external-psk-importer}}.
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at
+least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using
+the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy.
+As discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from
+less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If
+only low-entropy keys are available, then key establishment mechanisms such as
+Password Authenticated Key Exchange (PAKE) that mitigate the risk
+of offline dictionary attacks SHOULD be employed. Note that no such mechanisms
+have yet been standardized, and further that these mechanisms will not
+necessarily follow the same architecture as the process for incorporating EPSKs
+described in {{!I-D.ietf-tls-external-psk-importer}}.
 
 2. Unless other accommodations are made, each PSK MUST be restricted in
 its use to at most two logical nodes: one logical node in a TLS client
@@ -307,11 +346,12 @@ client and server identifiers over the TLS connection after the
 handshake, and (2) incorporating identifiers for both the client and the
 server into the context string for an EPSK importer.
 
-3. Nodes using TLS 1.3 SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
-when configuring PSKs for a client-server pair. Importers make provisioning
-external PSKs easier and less error prone by deriving a unique, imported PSK from the
-external PSK for each key derivation function a node supports. See the Security Considerations
-in {{!I-D.ietf-tls-external-psk-importer}} for more information.
+3. Nodes using TLS 1.3 SHOULD use external PSK importers {
+{!I-D.ietf-tls-external-psk-importer}} when configuring PSKs for a client-server
+pair. Importers make provisioning external PSKs easier and less error prone by
+deriving a unique, imported PSK from the external PSK for each key derivation
+function a node supports. See the Security Considerations in {
+{!I-D.ietf-tls-external-psk-importer}} for more information.
 
 4. Where possible the main PSK (that which is fed into the importer) SHOULD be
 deleted after the imported keys have been generated. This protects an attacker
@@ -319,32 +359,41 @@ from bootstrapping a compromise of one node into the ability to attack connectio
 between any node; otherwise the attacker can recover the main key and then
 re-run the importer itself.
 
+5. If PSKs are used for providing security against quantum computers, then it
+recommended that they combine this with certificate-based authentication as
+specified in {{?RFC8773}}
+
 ## Stack Interfaces
 
 Most major TLS implementations support external PSKs. Stacks supporting external PSKs
 provide interfaces that applications may use when supplying them for individual connections.
 Details about existing stacks at the time of writing are below.
 
-- OpenSSL and BoringSSL: Apart from TLS 1.3 in BoringSSL, applications can specify support for
-external PSKs via distinct ciphersuites. They also then configure callbacks that are invoked for
-PSK selection during the handshake. These callbacks must provide a PSK identity and key. The
-exact format of the callback depends on the negotiated TLS protocol version with new callback
-functions added specifically to OpenSSL for TLS 1.3 {{!RFC8446}} PSK support. The PSK length
-is validated to be between \[1, 256\] bytes. The PSK identity may be up to 128 bytes long.
-- mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
-identity and value inline. Servers must implement callbacks similar to that of OpenSSL. Both PSK
-identity and key lengths may be between \[1, 16\] bytes long.
+- OpenSSL and BoringSSL: Apart from TLS 1.3 in BoringSSL, applications can
+specify support for external PSKs via distinct ciphersuites. They also then
+configure callbacks that are invoked for PSK selection during the handshake.
+These callbacks must provide a PSK identity and key. The exact format of the
+callback depends on the negotiated TLS protocol version with new callback
+functions added specifically to OpenSSL for TLS 1.3 {{!RFC8446}} PSK support.
+The PSK length is validated to be between \[1, 256\] bytes. The PSK identity may
+be up to 128 bytes long. 
+- mbedTLS: Client applications configure PSKs before creating a connection by
+providing the PSK identity and value inline. Servers must implement callbacks
+similar to that of OpenSSL. Both PSK identity and key lengths may be between \[1, 16\] bytes long.
 - gnuTLS: Applications configure PSK values, either as raw byte strings or
 hexadecimal strings. The PSK identity and key size are not validated.
 - wolfSSL: Applications configure PSKs with callbacks similar to OpenSSL.
 
 ### PSK Identity Encoding and Comparison
 
-Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then
-encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is
-configured by human users).  On the other hand, {{?RFC7925}} advises  implementations against assuming any structured
-format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identites are configured
-manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
+Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first
+converted to a character string and then encoded to octets using UTF-8. This was
+done to avoid interoperability problems (especially when the identity is
+configured by human users).  On the other hand, {{?RFC7925}} advises 
+implementations against assuming any structured format for PSK identities and
+recommends byte-by-byte comparison for any operation. When PSK identities are
+configured manually it is important to be aware that due to encoding issues
+visually identical strings may, in fact, differ.
 
 TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
 the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>
@@ -364,7 +413,7 @@ to avoid collisions.
 
 It is possible, though unlikely, that an external PSK identity may clash with a
 resumption PSK identity. The TLS stack implementation and sequencing of PSK callbacks
-influences the application's behaviour when identity collisions occur. When a server
+influences the application's behavior when identity collisions occur. When a server
 receives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks
 execute the application's registered callback function before checking the stack's
 internal session resumption cache. This means that if a PSK identity collision occurs,
@@ -395,7 +444,8 @@ This document makes no IANA requests.
 
 # Acknowledgements
 
-This document is the output of the TLS External PSK Design Team, comprised of the following members:
+This document is the output of the TLS External PSK Design Team which comprised
+the following members:
 Benjamin Beurdouche,
 Björn Haase,
 Christopher Wood,
