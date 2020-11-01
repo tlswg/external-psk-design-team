@@ -165,7 +165,7 @@ attacker to passively read all traffic.
 In addition to these, a malicious non-member can reroute handshakes
 between honest group members to connect them in unintended ways, as
 detailed below. (Note that this class of attack is not possible if each member uses
-the SNI extension and terminates the connection on mismatch {{!RFC6066}}{{Selfie}}.)
+the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
