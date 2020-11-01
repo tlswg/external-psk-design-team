@@ -31,7 +31,7 @@ author:
   -
     ins: C.A. Wood
     name: Christopher A. Wood
-    organization: Cloudflare Ltd.
+    organization: Cloudflare
     email: caw@heapingbits.net
 
 normative:
@@ -149,6 +149,7 @@ The external PSK authentication mechanism in TLS implicitly assumes
 one fundamental property: each PSK is known to exactly one client and
 one server, and that these never switch roles. If this assumption is
 violated, then the security properties of TLS are severely weakened.
+(See {{Selfie}} for details.)
 
 As discussed in {{use-cases}}, there are use cases where it is
 desirable for multiple clients or multiple servers to share a PSK. If
@@ -166,7 +167,8 @@ attacker to passively read all traffic.
 In addition to these, a malicious non-member can reroute handshakes
 between honest group members to connect them in unintended ways, as
 detailed below. (Note that this class of attack is not possible if each member uses
-the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
+the SNI extension {{!RFC6066}} and terminates the connection on mismatch.
+See {{Selfie}} for details.)
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
@@ -294,7 +296,7 @@ If an application uses external PSKs, the external PSKs MUST adhere to the follo
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
 derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are
 available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk
-of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
+of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardized, and further
 that these mechanisms will not necessarily follow the same architecture as the process for incorporating EPSKs described
 in {{!I-D.ietf-tls-external-psk-importer}}.
 
@@ -322,8 +324,8 @@ re-run the importer itself.
 ## Stack Interfaces
 
 Most major TLS implementations support external PSKs. Stacks supporting external PSKs
-provide interfaces that applications may use when supplying them for individual connections.
-Details about existing stacks at the time of writing are below.
+provide interfaces that applications may use when configuring PSKs for individual
+connections. Details about existing stacks at the time of writing are below.
 
 - OpenSSL and BoringSSL: Apart from TLS 1.3 in BoringSSL, applications can specify support for
 external PSKs via distinct ciphersuites. They also then configure callbacks that are invoked for
@@ -343,7 +345,7 @@ hexadecimal strings. The PSK identity and key size are not validated.
 Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then
 encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is
 configured by human users).  On the other hand, {{?RFC7925}} advises  implementations against assuming any structured
-format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identites are configured
+format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identities are configured
 manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
 
 TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
@@ -356,7 +358,9 @@ the format of PSK identities can vary depending on the deployment:
 - The PSK identity MAY be a user configured string when used in protocols like
 Extensible Authentication Protocol (EAP) {{?RFC3748}}. gnuTLS for example treats
 PSK identities as usernames.
-- PSK identities MAY have a domain name suffix for roaming and federation.
+- PSK identities MAY have a domain name suffix for roaming and federation. In
+applications and settings where the domain name suffix is privacy sensitive, this
+practice is NOT RECOMMENDED.
 - Deployments should take care that the length of the PSK identity is sufficient
 to avoid collisions.
 
@@ -364,7 +368,7 @@ to avoid collisions.
 
 It is possible, though unlikely, that an external PSK identity may clash with a
 resumption PSK identity. The TLS stack implementation and sequencing of PSK callbacks
-influences the application's behaviour when identity collisions occur. When a server
+influences the application's behavior when identity collisions occur. When a server
 receives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks
 execute the application's registered callback function before checking the stack's
 internal session resumption cache. This means that if a PSK identity collision occurs,
