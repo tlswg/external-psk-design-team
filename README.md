@@ -21,4 +21,4 @@ This requires that you have the necessary software installed.  See
 ## Contributing
 
 See the
-[guidelines for contributions](https://github.com/tlswg/external-psk-design-team/blob/master/CONTRIBUTING.md).
+[guidelines for contributions](https://github.com/tlswg/external-psk-design-team/blob//CONTRIBUTING.md).
