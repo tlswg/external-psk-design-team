@@ -325,10 +325,10 @@ Most major TLS implementations support external PSKs. Stacks supporting external
 provide interfaces that applications may use when supplying them for individual connections.
 Details about existing stacks at the time of writing are below.
 
-- OpenSSL and BoringSSL: Apart from TLS 1.3 in BoringSSL, applications can specify support for
-external PSKs via distinct ciphersuites. They also then configure callbacks that are invoked for
+- OpenSSL and BoringSSL: Applications can specify support for external PSKs via
+distinct ciphersuites in TLS 1.2 and below. They also then configure callbacks that are invoked for
 PSK selection during the handshake. These callbacks must provide a PSK identity and key. The
-exact format of the callback depends on the negotiated TLS protocol version with new callback
+exact format of the callback depends on the negotiated TLS protocol version, with new callback
 functions added specifically to OpenSSL for TLS 1.3 {{!RFC8446}} PSK support. The PSK length
 is validated to be between \[1, 256\] bytes. The PSK identity may be up to 128 bytes long.
 - mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
