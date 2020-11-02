@@ -106,12 +106,7 @@ informative:
 
 --- abstract
 
-This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS.
-It lists TLS security properties provided by PSKs under certain assumptions and
-demonstrates how violations of these assumptions lead to attacks. This document
-also discusses PSK use cases, provisioning processes, and TLS stack implementation
-support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions.
+This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates how violations of these assumptions lead to attacks. This document also discusses security properties which are not provided by PSKs and examines PSK use cases, provisioning processes, and TLS stack implementation support. Finally, it provides advice for  applications in various use cases to help help meet these assumptions.
 
 --- middle
 
@@ -145,9 +140,17 @@ participating in a connection.
 
 # PSK Security Properties {#sec-properties}
 
-The external PSK authentication mechanism in TLS implicitly assumes
-one fundamental property: each PSK is known to exactly one client and
-one server, and that these never switch roles. If this assumption is
+The external PSK authentication mechanism in TLS implicitly assumes one fundamental property: each PSK is known to exactly one client and one server, and that these never switch roles. 
+
+Even with such an assumption, the PSK has the following shortcomings:
+
+- Key Compromise Impersonation (KCI) resistance: if the PSK of one of the participants in compromised, then the attacker can impersonate both the client and the server. 
+- Protection of endpoint identities: PSK identity information is not protected an attacker can use it to track clients and servers across connections. 
+- The psk_key mode naturally does not provide forward secrecy and a compromise of the long-term PSK can let the attacker read any traffic captured in the past. 
+- Lack of non-repudiation: use of PSKs can allow one of the parties to deny the conversation and does not provide non-repudiation. 
+
+
+If the assumption is
 violated, then the security properties of TLS are severely weakened.
 
 As discussed in {{use-cases}}, there are use cases where it is
@@ -158,15 +161,15 @@ overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-2. If a group member is compromised, then the attacker can impersonate any
-group member (this follows from property (1)).
-3. If PSK without DH is used, then compromise of any group member allows the
-attacker to passively read all traffic.
+2. If PSK with DH is used, then a group member that actively MITM the handshakes and the following traffic can eavesdrop or modify the traffic.
+3. If PSK without DH is used, then any group member can passively read all traffic.
+4. If a group member is compromised, then the attacker can perform all the above.
+5. A malicious non-member can reroute handshakes between honest group members to connect them in unintended ways, as detailed below. (Note that this class of attack is not possible if each member uses the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
 
-In addition to these, a malicious non-member can reroute handshakes
-between honest group members to connect them in unintended ways, as
-detailed below. (Note that this class of attack is not possible if each member uses
-the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
+
+In addition to these, sharing a PSK across nodes negatively affects deployments since:
+- Revocation of individual group members is not possible without changing the authentication key for all members.
+- Network activity logging becomes less useful as messages can only be tied to the group and not individual members (or pair of members).
 
 Let the group of peers who know the key be `A`, `B`, and `C`.
 The attack proceeds as follows:
@@ -249,6 +252,8 @@ between a server and user equipment for authentication {{GAA}}.
 - Smart Cards. The electronic German ID (eID) card supports authentication of a card holder to
 online services with TLS-PSK {{SmartCard}}.
 
+- Quantum resistance: Some deployments may use PSKs (or combine them with certificate-based authentication) because of the protection they provide against quantum computers.
+
 There are also use cases where PSKs are shared between more than two entities. Some examples below
 (as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
 
@@ -318,6 +323,9 @@ deleted after the imported keys have been generated. This protects an attacker
 from bootstrapping a compromise of one node into the ability to attack connections
 between any node; otherwise the attacker can recover the main key and then
 re-run the importer itself.
+
+5. If PSKs are used for providing security against quantum computers, then it is recommended that they combine this with certificate-based authentication as specified in {{?RFC8773}}
+
 
 ## Stack Interfaces
 
@@ -395,7 +403,7 @@ This document makes no IANA requests.
 
 # Acknowledgements
 
-This document is the output of the TLS External PSK Design Team, comprised of the following members:
+This document is the output of the TLS External PSK Design Team which was composed the following members:
 Benjamin Beurdouche,
 Björn Haase,
 Christopher Wood,
