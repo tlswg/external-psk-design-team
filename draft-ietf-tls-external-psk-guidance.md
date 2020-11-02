@@ -31,7 +31,7 @@ author:
   -
     ins: C.A. Wood
     name: Christopher A. Wood
-    organization: Cloudflare Ltd.
+    organization: Cloudflare
     email: caw@heapingbits.net
 
 normative:
@@ -111,7 +111,8 @@ It lists TLS security properties provided by PSKs under certain assumptions and
 demonstrates how violations of these assumptions lead to attacks. This document
 also discusses PSK use cases, provisioning processes, and TLS stack implementation
 support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions.
+in various use cases to help meet these assumptions. Privacy and security properties
+not provided by PSKs are also included.
 
 --- middle
 
@@ -145,10 +146,14 @@ participating in a connection.
 
 # PSK Security Properties {#sec-properties}
 
-The external PSK authentication mechanism in TLS implicitly assumes
-one fundamental property: each PSK is known to exactly one client and
-one server, and that these never switch roles. If this assumption is
-violated, then the security properties of TLS are severely weakened.
+External PSK authentication in TLS allows endpoints to authenticate connections
+using previously established keys. These keys do not provide protection
+of endpoint identities (see {{endpoint-privacy}}), nor do they provide
+non-repudiation (one endpoint in a connection can deny the conversation).
+PSK authentication security implicitly assumes one fundamental property: each
+PSK is known to exactly one client and one server, and that these never switch
+roles. If this assumption is violated, then the security properties of TLS are
+severely weakened.
 
 As discussed in {{use-cases}}, there are use cases where it is
 desirable for multiple clients or multiple servers to share a PSK. If
@@ -158,25 +163,24 @@ overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-2. If a group member is compromised, then the attacker can impersonate any
-group member (this follows from property (1)).
-3. If PSK without DH is used, then compromise of any group member allows the
-attacker to passively read all traffic.
+1. If PSK with DH is used, then compromise of a group member that actively
+completes connections with other group members can read (and modify) traffic.
+1. If PSK without DH is used, then compromise of any group member allows the
+attacker to passively read (and modify) all traffic.
+1. If a group member is compromised, then the attacker can perform all of the above attacks.
 
-In addition to these, a malicious non-member can reroute handshakes
-between honest group members to connect them in unintended ways, as
-detailed below. (Note that this class of attack is not possible if each member uses
-the SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)
-
-Let the group of peers who know the key be `A`, `B`, and `C`.
-The attack proceeds as follows:
+Additionally, a malicious non-member can reroute handshakes between honest group members
+to connect them in unintended ways, as described below. (Note that this class of attack is
+not possible if each member uses the SNI extension {{!RFC6066}} and terminates the
+connection on mismatch. See {{Selfie}} for details.) Let the group of peers who know the
+key be `A`, `B`, and `C`. The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
-2. The attacker intercepts the message and redirects it to `C`.
-3. `C` responds with a `ServerHello` to `A`.
-4. `A` sends a `Finished` message to `B`.
+1. The attacker intercepts the message and redirects it to `C`.
+1. `C` responds with a `ServerHello` to `A`.
+1. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
-5. The attacker redirects the `Finished` message to `C`.
+1. The attacker redirects the `Finished` message to `C`.
 `C` has completed the handshake with `A`.
 
 This attack violates the peer authentication property, and if `C` supports a
@@ -186,6 +190,10 @@ protection property. This rerouting is a type of identity misbinding attack
 attack against a group member that can act both as TLS server and client. In the
 Selfie attack, a malicious non-member reroutes a connection from the client to
 the server on the same endpoint.
+
+Finally, in addition to these weaknesses, sharing a PSK across nodes may negatively
+affects deployments. For example, revocation of individual group members is not
+possible without changing the authentication key for all members.
 
 Entropy properties of external PSKs may also affect TLS security properties. In
 particular, if a high entropy PSK is used, then PSK-only key establishment modes
@@ -200,20 +208,25 @@ offline if the attacker captures a single handshake using the PSK, but those
 attacks will not lead to compromise of the traffic keys for that connection because
 those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only
 secure against active attack if a PAKE is used with TLS. The Crypto Forum Research
- Group (CFRG) is currently working on specifying a standard PAKE (see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.krawczyk-cfrg-opaque}}).
+Group (CFRG) is currently working on specifying a standard PAKE
+(see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.irtf-cfrg-opaque}}).
 
-# Privacy Properties
+# Privacy Properties {#endpoint-privacy}
 
 PSK privacy properties are orthogonal to security properties described in {{sec-properties}}.
 Traditionally, TLS does little to keep PSK identity information private. For example,
 an adversary learns information about the external PSK or its identifier by virtue of it
-appearing in cleartext in a ClientHello. As a result, a passive adversary can link
-two or more connections together that use the same external PSK on the wire. Techniques for mitigating
-these risks require analysis and are out of scope for this document.
+appearing in cleartext in a ClientHello. As a result, a passive adversary can link two or
+more connections together that use the same external PSK on the wire. Depending on the PSK
+identity, a passive attacker may also be able to identify the device, person, or enterprise
+running the TLS client or TLS server. An active attacker can also use the PSK identity to
+oppress handshakes or application data from a specific device by blocking, delaying, or
+rate-limiting traffic. Techniques for mitigating these risks require analysis and are out
+of scope for this document.
 
-In addition to linkability in the network, external PSKs are intrinsically linkable by PSK receivers.
-Specifically, servers can link successive connections that use the same external PSK together. Preventing
-this type of linkability is out of scope.
+In addition to linkability in the network, external PSKs are intrinsically linkable
+by PSK receivers. Specifically, servers can link successive connections that use the
+same external PSK together. Preventing this type of linkability is out of scope.
 
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
@@ -235,10 +248,11 @@ connections with early data.
 may use externally provisioned PSKs, primarily for the purposes of establishing TLS
 connections without requiring the overhead of provisioning and managing PKI certificates.
 
-- Internet of Things (IoT) and devices with limited computational capabilities. {{?RFC7925}} defines TLS and DTLS
-  profiles for resource-constrained devices and suggests the use of PSK ciphersuites for compliant devices. The Open
-Mobile Alliance Lightweight Machine to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support
-the PSK mode of DTLS.
+- Internet of Things (IoT) and devices with limited computational capabilities.
+{{?RFC7925}} defines TLS and DTLS profiles for resource-constrained devices and suggests
+the use of PSK ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine
+to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the
+PSK mode of DTLS.
 
 - Use of PSK ciphersuites are optional when securing RADIUS {{?RFC2865}} with TLS as specified
 in {{?RFC6614}}.
@@ -249,14 +263,18 @@ between a server and user equipment for authentication {{GAA}}.
 - Smart Cards. The electronic German ID (eID) card supports authentication of a card holder to
 online services with TLS-PSK {{SmartCard}}.
 
+- Quantum resistance: Some deployments may use PSKs (or combine them with certificate-based
+authentication as described in {{?RFC8773}}) because of the protection they provide against
+quantum computers.
+
 There are also use cases where PSKs are shared between more than two entities. Some examples below
 (as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
 
 - Group chats. In this use-case, group participants may be provisioned an external PSK out-of-band for establishing
-  authenticated connections with other members of the group.
+authenticated connections with other members of the group.
 
 - Internet of Things (IoT) and devices with limited computational capabilities. Many PSK provisioning examples are
-  possible in this use-case. For example, in a given setting, IoT devices may all share the same PSK and use it to
+possible in this use-case. For example, in a given setting, IoT devices may all share the same PSK and use it to
 communicate with a central server (one key for n devices), have their own key for communicating with a central server (n
 keys for n devices), or have pairwise keys for communicating with each other (n^2 keys for n devices).
 
@@ -291,12 +309,16 @@ as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk
 
 If an application uses external PSKs, the external PSKs MUST adhere to the following requirements:
 
-1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those
-derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are
-available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk
-of offline dictionary attacks SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
-that these mechanisms will not necessarily follow the same architecture as the process for incorporating EPSKs described
-in {{!I-D.ietf-tls-external-psk-importer}}.
+1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
+128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the
+"psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As
+discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
+than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
+low-entropy keys are available, then key establishment mechanisms such as Password
+Authenticated Key Exchange (PAKE) that mitigate the risk of offline dictionary attacks
+SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
+that these mechanisms will not necessarily follow the same architecture as the
+process for incorporating EPSKs described in {{!I-D.ietf-tls-external-psk-importer}}.
 
 2. Unless other accommodations are made, each PSK MUST be restricted in
 its use to at most two logical nodes: one logical node in a TLS client
