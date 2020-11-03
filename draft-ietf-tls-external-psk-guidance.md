@@ -344,8 +344,8 @@ re-run the importer itself.
 ## Stack Interfaces
 
 Most major TLS implementations support external PSKs. Stacks supporting external PSKs
-provide interfaces that applications may use when supplying them for individual connections.
-Details about existing stacks at the time of writing are below.
+provide interfaces that applications may use when configuring PSKs for individual
+connections. Details about existing stacks at the time of writing are below.
 
 - OpenSSL and BoringSSL: Applications can specify support for external PSKs via
 distinct ciphersuites in TLS 1.2 and below. They also then configure callbacks that are invoked for
@@ -365,7 +365,7 @@ hexadecimal strings. The PSK identity and key size are not validated.
 Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then
 encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is
 configured by human users).  On the other hand, {{?RFC7925}} advises  implementations against assuming any structured
-format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identites are configured
+format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identities are configured
 manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
 
 TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
@@ -378,7 +378,9 @@ the format of PSK identities can vary depending on the deployment:
 - The PSK identity MAY be a user configured string when used in protocols like
 Extensible Authentication Protocol (EAP) {{?RFC3748}}. gnuTLS for example treats
 PSK identities as usernames.
-- PSK identities MAY have a domain name suffix for roaming and federation.
+- PSK identities MAY have a domain name suffix for roaming and federation. In
+applications and settings where the domain name suffix is privacy sensitive, this
+practice is NOT RECOMMENDED.
 - Deployments should take care that the length of the PSK identity is sufficient
 to avoid collisions.
 
@@ -386,7 +388,7 @@ to avoid collisions.
 
 It is possible, though unlikely, that an external PSK identity may clash with a
 resumption PSK identity. The TLS stack implementation and sequencing of PSK callbacks
-influences the application's behaviour when identity collisions occur. When a server
+influences the application's behavior when identity collisions occur. When a server
 receives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks
 execute the application's registered callback function before checking the stack's
 internal session resumption cache. This means that if a PSK identity collision occurs,
