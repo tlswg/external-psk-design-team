@@ -1,3 +1,4 @@
+*.DS_Store
 *.html
 *.pdf
 *.redxml
@@ -10,8 +11,9 @@
 .targets.mk
 /*-[0-9][0-9].xml
 archive.json
+draft-ietf-tls-external-psk-guidance.xml
+lib
 report.xml
 venv/
 lib
 draft-ietf-tls-external-psk-guidance.xml
-*.DS_Store
