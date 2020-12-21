@@ -155,6 +155,8 @@ PSK is known to exactly one client and one server, and that these never switch
 roles. If this assumption is violated, then the security properties of TLS are
 severely weakened.
 
+## Shared PSKs
+
 As discussed in {{use-cases}}, there are use cases where it is
 desirable for multiple clients or multiple servers to share a PSK. If
 this is done naively by having all members share a common key, then
@@ -192,8 +194,10 @@ Selfie attack, a malicious non-member reroutes a connection from the client to
 the server on the same endpoint.
 
 Finally, in addition to these weaknesses, sharing a PSK across nodes may negatively
-affects deployments. For example, revocation of individual group members is not
+affect deployments. For example, revocation of individual group members is not
 possible without changing the authentication key for all members.
+
+## PSK Entropy
 
 Entropy properties of external PSKs may also affect TLS security properties. In
 particular, if a high entropy PSK is used, then PSK-only key establishment modes
@@ -211,7 +215,7 @@ secure against active attack if a PAKE is used with TLS. The Crypto Forum Resear
 Group (CFRG) is currently working on specifying a standard PAKE
 (see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.irtf-cfrg-opaque}}).
 
-# Privacy Properties {#endpoint-privacy}
+# Privacy Considerations {#endpoint-privacy}
 
 PSK privacy properties are orthogonal to security properties described in {{sec-properties}}.
 Traditionally, TLS does little to keep PSK identity information private. For example,
@@ -220,7 +224,7 @@ appearing in cleartext in a ClientHello. As a result, a passive adversary can li
 more connections together that use the same external PSK on the wire. Depending on the PSK
 identity, a passive attacker may also be able to identify the device, person, or enterprise
 running the TLS client or TLS server. An active attacker can also use the PSK identity to
-oppress handshakes or application data from a specific device by blocking, delaying, or
+suppress handshakes or application data from a specific device by blocking, delaying, or
 rate-limiting traffic. Techniques for mitigating these risks require analysis and are out
 of scope for this document.
 
@@ -278,10 +282,10 @@ possible in this use-case. For example, in a given setting, IoT devices may all 
 communicate with a central server (one key for n devices), have their own key for communicating with a central server (n
 keys for n devices), or have pairwise keys for communicating with each other (n^2 keys for n devices).
 
-The exact provisioning process depends on the system requirements and threat model. Generally, use of
-a single PSK shared between more than one node is not recommended, even if other accommodations
-are made, such as client certificate authentication after PSK-based connection establishment.
-See {{recommendations}}.
+The exact provisioning process depends on the system requirements and threat
+model.  Whenever possible, avoid sharing a PSK between nodes; however, sharing
+a PSK among several node is sometimes unavoidable. When PSK sharing happens,
+other accommodations SHOULD be used as discussed in {{recommendations}}.
 
 ## Provisioning Examples
 
@@ -336,7 +340,7 @@ external PSK for each key derivation function a node supports. See the Security 
 in {{!I-D.ietf-tls-external-psk-importer}} for more information.
 
 4. Where possible the main PSK (that which is fed into the importer) SHOULD be
-deleted after the imported keys have been generated. This protects an attacker
+deleted after the imported keys have been generated. This prevents an attacker
 from bootstrapping a compromise of one node into the ability to attack connections
 between any node; otherwise the attacker can recover the main key and then
 re-run the importer itself.
