@@ -136,7 +136,7 @@ DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{RFC2119}} {{RFC8174}}
+document are to be interpreted as described in BCP&nbsp;14 {{RFC2119}} {{RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
 # Notation
@@ -166,7 +166,7 @@ severely weakened as discussed below.
 As discussed in {{use-cases}}, there are use cases where it is
 desirable for multiple clients or multiple servers to share a PSK. If
 this is done naively by having all members share a common key, then
-TLS only authenticates the entire group, and the security of the
+TLS authenticates only group membership, and the security of the
 overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
@@ -178,10 +178,12 @@ attacker to passively read (and modify) all traffic.
 1. If a group member is compromised, then the attacker can perform all of the above attacks.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. (Note that this class of attack is
+to connect them in unintended ways, as described below. Note that this class of attack is
 not possible if each member uses the SNI extension {{!RFC6066}} and terminates the
-connection on mismatch. See {{Selfie}} for details.) Let the group of peers who know the
-key be `A`, `B`, and `C`. The attack proceeds as follows:
+connection on mismatch. See {{Selfie}} for details.
+
+To illustrate the rerouting attack, consider the group of peers who know
+the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
 1. The attacker intercepts the message and redirects it to `C`.
@@ -201,7 +203,7 @@ the server on the same endpoint.
 
 Finally, in addition to these weaknesses, sharing a PSK across nodes may negatively
 affect deployments. For example, revocation of individual group members is not
-possible without changing the authentication key for all members.
+possible without changing establishing a new PSK for all of the non-revoked members.
 
 ## PSK Entropy
 
