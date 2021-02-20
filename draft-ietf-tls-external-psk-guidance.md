@@ -36,7 +36,8 @@ author:
 
 normative:
   RFC2119:
-
+  RFC8174:
+  RFC8446:
 
 informative:
   RFC6614:
@@ -106,34 +107,41 @@ informative:
 
 --- abstract
 
-This document provides usage guidance for external Pre-Shared Keys (PSKs) in TLS.
+This document provides usage guidance for external Pre-Shared Keys (PSKs)
+in Transport Layer Security (TLS) version 1.3 as defined in RFC 8446.
 It lists TLS security properties provided by PSKs under certain assumptions and
-demonstrates how violations of these assumptions lead to attacks. This document
-also discusses PSK use cases, provisioning processes, and TLS stack implementation
+demonstrates how violations of these assumptions lead to attacks. It
+discusses PSK use cases, provisioning processes, and TLS stack implementation
 support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions. Privacy and security properties
-not provided by PSKs are also included.
+in various use cases to help meet these assumptions. It also lists the privacy
+and security properties that are not provided by TLS when external PSKs are used.
 
 --- middle
 
 # Introduction
 
-There are many resources that provide guidance for password generation and verification aimed towards improving security.
-However, there is no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce
-that gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates
-how violations of these assumptions lead to attacks. This document also discusses PSK use
-cases, provisioning processes, and TLS stack implementation support in the context of these
-assumptions. It provides advice for applications in various use cases to help meet these
-assumptions.
+This document provides guidance on the use of external Pre-Shared Keys (PSKs)
+in Transport Layer Security (TLS) version 1.3 {{RFC8446}}. This document lists
+TLS security properties provided by PSKs under certain assumptions and
+demonstrates how violations of these assumptions lead to attacks. This
+document discusses PSK use cases, provisioning processes, and TLS stack
+implementation support in the context of these assumptions. This document
+also provides advice for applications in various use cases to help meet
+these assumptions.
 
-The guidance provided in this document is applicable across TLS {{!RFC8446}},
+There are many resources that provide guidance for password generation and
+verification aimed towards improving security. However, there is no such
+equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims
+to reduce that gap.
+
+The guidance provided in this document is applicable across TLS {{RFC8446}},
 DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
 
 # Conventions and Definitions
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in BCP 14 {{!RFC2119}} {{!RFC8174}}
+document are to be interpreted as described in BCP&nbsp;14 {{RFC2119}} {{RFC8174}}
 when, and only when, they appear in all capitals, as shown here.
 
 # Notation
@@ -150,17 +158,20 @@ External PSK authentication in TLS allows endpoints to authenticate connections
 using previously established keys. These keys do not provide protection
 of endpoint identities (see {{endpoint-privacy}}), nor do they provide
 non-repudiation (one endpoint in a connection can deny the conversation).
+Protection of endpoint identities and protection against an endpoint denying
+the conversation are possible when a fresh TLS handshake is performed.
+
 PSK authentication security implicitly assumes one fundamental property: each
 PSK is known to exactly one client and one server, and that these never switch
 roles. If this assumption is violated, then the security properties of TLS are
-severely weakened.
+severely weakened as discussed below.
 
 ## Shared PSKs
 
 As discussed in {{use-cases}}, there are use cases where it is
 desirable for multiple clients or multiple servers to share a PSK. If
 this is done naively by having all members share a common key, then
-TLS only authenticates the entire group, and the security of the
+TLS authenticates only group membership, and the security of the
 overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
@@ -172,10 +183,12 @@ attacker to passively read (and modify) all traffic.
 1. If a group member is compromised, then the attacker can perform all of the above attacks.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. (Note that this class of attack is
+to connect them in unintended ways, as described below. Note that this class of attack is
 not possible if each member uses the SNI extension {{!RFC6066}} and terminates the
-connection on mismatch. See {{Selfie}} for details.) Let the group of peers who know the
-key be `A`, `B`, and `C`. The attack proceeds as follows:
+connection on mismatch. See {{Selfie}} for details.
+
+To illustrate the rerouting attack, consider the group of peers who know
+the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
 1. The attacker intercepts the message and redirects it to `C`.
@@ -195,7 +208,7 @@ the server on the same endpoint.
 
 Finally, in addition to these weaknesses, sharing a PSK across nodes may negatively
 affect deployments. For example, revocation of individual group members is not
-possible without changing the authentication key for all members.
+possible without changing establishing a new PSK for all of the non-revoked members.
 
 ## PSK Entropy
 
@@ -235,7 +248,7 @@ same external PSK together. Preventing this type of linkability is out of scope.
 # External PSK Use Cases and Provisioning Processes {#use-cases}
 
 PSK ciphersuites were first specified for TLS in 2005. Now, PSKs are an integral
-part of the TLS version 1.3 specification {{!RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
+part of the TLS version 1.3 specification {{RFC8446}}. TLS 1.3 also uses PSKs for session resumption.
 It distinguishes these resumption PSKs from external PSKs which have been provisioned out-of-band (OOB).
 Below, we list some example use-cases where pair-wise external PSKs (i.e., external PSKs that are shared
 between only one server and one client) have been used for authentication in TLS.
@@ -258,8 +271,8 @@ the use of PSK ciphersuites for compliant devices. The Open Mobile Alliance Ligh
 to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the
 PSK mode of DTLS.
 
-- Use of PSK ciphersuites are optional when securing RADIUS {{?RFC2865}} with TLS as specified
-in {{?RFC6614}}.
+- Use of PSK ciphersuites are optional when securing RADIUS {{RFC2865}} with TLS as specified
+in {{RFC6614}}.
 
 - The Generic Authentication Architecture (GAA) defined by 3GGP mentions that TLS-PSK can be used
 between a server and user equipment for authentication {{GAA}}.
@@ -355,7 +368,7 @@ connections. Details about existing stacks at the time of writing are below.
 distinct ciphersuites in TLS 1.2 and below. They also then configure callbacks that are invoked for
 PSK selection during the handshake. These callbacks must provide a PSK identity and key. The
 exact format of the callback depends on the negotiated TLS protocol version, with new callback
-functions added specifically to OpenSSL for TLS 1.3 {{!RFC8446}} PSK support. The PSK length
+functions added specifically to OpenSSL for TLS 1.3 {{RFC8446}} PSK support. The PSK length
 is validated to be between \[1, 256\] bytes. The PSK identity may be up to 128 bytes long.
 - mbedTLS: Client applications configure PSKs before creating a connection by providing the PSK
 identity and value inline. Servers must implement callbacks similar to that of OpenSSL. Both PSK
@@ -372,10 +385,10 @@ configured by human users).  On the other hand, {{?RFC7925}} advises  implementa
 format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identities are configured
 manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
 
-TLS version 1.3 {{!RFC8446}} follows the same practice of specifying
+TLS version 1.3 {{RFC8446}} follows the same practice of specifying
 the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>
-in the specification). {{!RFC8446}} also requires that the PSK identities are at
-least 1 byte and at the most 65535 bytes in length. Although {{!RFC8446}} does not
+in the specification). {{RFC8446}} also requires that the PSK identities are at
+least 1 byte and at the most 65535 bytes in length. Although {{RFC8446}} does not
 place strict requirements on the format of PSK identities, we do however note that
 the format of PSK identities can vary depending on the deployment:
 
