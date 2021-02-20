@@ -129,6 +129,11 @@ implementation support in the context of these assumptions. This document
 also provides advice for applications in various use cases to help meet
 these assumptions.
 
+There are many resources that provide guidance for password generation and
+verification aimed towards improving security. However, there is no such
+equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims
+to reduce that gap.
+
 The guidance provided in this document is applicable across TLS {{RFC8446}},
 DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
 
