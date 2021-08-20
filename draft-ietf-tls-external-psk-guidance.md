@@ -135,7 +135,7 @@ equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims
 to reduce that gap.
 
 The guidance provided in this document is applicable across TLS {{RFC8446}},
-DTLS {{!I-D.ietf-tls-dtls13}}, and Constrained TLS {{?I-D.ietf-tls-ctls}}.
+DTLS {{!I-D.ietf-tls-dtls13}}, and Compact TLS {{?I-D.ietf-tls-ctls}}.
 
 # Conventions and Definitions
 
@@ -185,14 +185,15 @@ attacker to passively read (and modify) all traffic.
 Additionally, a malicious non-member can reroute handshakes between honest group members
 to connect them in unintended ways, as described below. Note that this class of attack is
 not possible if each member uses the SNI extension {{!RFC6066}} and terminates the
-connection on mismatch. See {{Selfie}} for details.
+connection on mismatch between the presented SNI value and the receiving member's
+known identity. See {{Selfie}} for details.
 
 To illustrate the rerouting attack, consider the group of peers who know
 the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
 1. The attacker intercepts the message and redirects it to `C`.
-1. `C` responds with a `ServerHello` to `A`.
+1. `C` responds with a second flight (`ServerHello`, ...) to `A`.
 1. `A` sends a `Finished` message to `B`.
 `A` has completed the handshake, ostensibly with `B`.
 1. The attacker redirects the `Finished` message to `C`.
@@ -208,7 +209,7 @@ the server on the same endpoint.
 
 Finally, in addition to these weaknesses, sharing a PSK across nodes may negatively
 affect deployments. For example, revocation of individual group members is not
-possible without changing establishing a new PSK for all of the non-revoked members.
+possible without establishing a new PSK for all of the non-revoked members.
 
 ## PSK Entropy
 
@@ -225,8 +226,9 @@ offline if the attacker captures a single handshake using the PSK, but those
 attacks will not lead to compromise of the traffic keys for that connection because
 those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only
 secure against active attack if a PAKE is used with TLS. The Crypto Forum Research
-Group (CFRG) is currently working on specifying a standard PAKE
-(see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.irtf-cfrg-opaque}}).
+Group (CFRG) is currently working on specifying recommended PAKEs
+(see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.irtf-cfrg-opaque}}, for the symmetric and
+asymmetric cases, respectively).
 
 # Privacy Considerations {#endpoint-privacy}
 
@@ -238,7 +240,7 @@ more connections together that use the same external PSK on the wire. Depending 
 identity, a passive attacker may also be able to identify the device, person, or enterprise
 running the TLS client or TLS server. An active attacker can also use the PSK identity to
 suppress handshakes or application data from a specific device by blocking, delaying, or
-rate-limiting traffic. Techniques for mitigating these risks require analysis and are out
+rate-limiting traffic. Techniques for mitigating these risks require further analysis and are out
 of scope for this document.
 
 In addition to linkability in the network, external PSKs are intrinsically linkable
@@ -362,7 +364,7 @@ re-run the importer itself.
 
 Most major TLS implementations support external PSKs. Stacks supporting external PSKs
 provide interfaces that applications may use when configuring PSKs for individual
-connections. Details about existing stacks at the time of writing are below.
+connections. Details about some existing stacks at the time of writing are below.
 
 - OpenSSL and BoringSSL: Applications can specify support for external PSKs via
 distinct ciphersuites in TLS 1.2 and below. They also then configure callbacks that are invoked for
@@ -387,7 +389,8 @@ manually it is important to be aware that due to encoding issues visually identi
 
 TLS version 1.3 {{RFC8446}} follows the same practice of specifying
 the PSK identity as a sequence of opaque bytes (shown as opaque identity<1..2^16-1>
-in the specification). {{RFC8446}} also requires that the PSK identities are at
+in the specification) that thus is compared on a byte-by-byte basis.
+{{RFC8446}} also requires that the PSK identities are at
 least 1 byte and at the most 65535 bytes in length. Although {{RFC8446}} does not
 place strict requirements on the format of PSK identities, we do however note that
 the format of PSK identities can vary depending on the deployment:
@@ -425,8 +428,12 @@ unique identifier can, for example, be one of its MAC addresses, a 32-byte
 random number, or its Universally Unique IDentifier (UUID) {{?RFC4122}}. Each
 endpoint SHOULD know the identifier of the other endpoint with which its wants
 to connect and SHOULD compare it with the other endpoint’s identifier used in
-ImportedIdentity.context. It is however important to remember that endpoints
-sharing the same group PSK can always impersonate each other.
+ImportedIdentity.context. Note that the globally unique identifier is used only
+as an input to the key derivation process, and is not visible in the wire
+protocol, so the privacy considerations remain at the same level discussed in
+{{endpoint-privacy}} for pairwise shared PSKs with unique identity.  It is
+however important to remember that endpoints sharing the same group PSK can
+always impersonate each other.
 
 # IANA Considerations {#IANA}
 
