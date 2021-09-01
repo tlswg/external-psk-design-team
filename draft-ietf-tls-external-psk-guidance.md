@@ -428,12 +428,8 @@ unique identifier can, for example, be one of its MAC addresses, a 32-byte
 random number, or its Universally Unique IDentifier (UUID) {{?RFC4122}}. Each
 endpoint SHOULD know the identifier of the other endpoint with which its wants
 to connect and SHOULD compare it with the other endpoint’s identifier used in
-ImportedIdentity.context. Note that the globally unique identifier is used only
-as an input to the key derivation process, and is not visible in the wire
-protocol, so the privacy considerations remain at the same level discussed in
-{{endpoint-privacy}} for pairwise shared PSKs with unique identity.  It is
-however important to remember that endpoints sharing the same group PSK can
-always impersonate each other.
+ImportedIdentity.context. It is however important to remember that endpoints
+sharing the same group PSK can always impersonate each other.
 
 # IANA Considerations {#IANA}
 
