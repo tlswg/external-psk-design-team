@@ -5,7 +5,7 @@ docname: draft-ietf-tls-external-psk-guidance-latest
 category: info
 
 ipr: trust200902
-area: General
+area: security
 workgroup: tls
 keyword: Internet-Draft
 
@@ -40,8 +40,18 @@ normative:
   RFC8446:
 
 informative:
+  RFC8773:
+  RFC7925:
+  RFC6066:
   RFC6614:
+  RFC4122:
   RFC2865:
+  I-D.ietf-tls-dtls13:
+  I-D.ietf-tls-ctls:
+  I-D.ietf-tls-external-psk-importer:
+  I-D.irtf-cfrg-cpace:
+  I-D.irtf-cfrg-opaque:
+  I-D.mattsson-emu-eap-tls-psk:
   Selfie:
      title: "Selfie: reflections on TLS 1.3 with PSK"
      author:
@@ -109,19 +119,24 @@ informative:
 
 This document provides usage guidance for external Pre-Shared Keys (PSKs)
 in Transport Layer Security (TLS) version 1.3 as defined in RFC 8446.
-It lists TLS security properties provided by PSKs under certain assumptions and
-demonstrates how violations of these assumptions lead to attacks. It
-discusses PSK use cases, provisioning processes, and TLS stack implementation
-support in the context of these assumptions. It provides advice for applications
-in various use cases to help meet these assumptions. It also lists the privacy
-and security properties that are not provided by TLS when external PSKs are used.
+This document lists TLS security properties provided by PSKs under certain
+assumptions, and then demonstrates how violations of these assumptions lead
+to attacks. This document discusses PSK use cases and provisioning processes.
+This document provides advice for applications to help meet these assumptions.
+This document also lists the privacy and security properties that are not
+provided by TLS version 1.3 when external PSKs are used.
 
 --- middle
 
 # Introduction
 
 This document provides guidance on the use of external Pre-Shared Keys (PSKs)
-in Transport Layer Security (TLS) version 1.3 {{RFC8446}}. This document lists
+in Transport Layer Security (TLS) version 1.3 {{RFC8446}}. This guidance also
+applies to Datagram TLS (DTLS) version 1.3 {{I-D.ietf-tls-dtls13}} and
+Compact TLS version 1.3 {{I-D.ietf-tls-ctls}}; however, for readability only
+TLS is used in the discussion. External PSKs are symmetric secret keys provided
+to the TLS protocol implementation as external inputs; they are provisioned
+out-of-band. This document lists
 TLS security properties provided by PSKs under certain assumptions and
 demonstrates how violations of these assumptions lead to attacks. This
 document discusses PSK use cases, provisioning processes, and TLS stack
@@ -133,9 +148,6 @@ There are many resources that provide guidance for password generation and
 verification aimed towards improving security. However, there is no such
 equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims
 to reduce that gap.
-
-The guidance provided in this document is applicable across TLS {{RFC8446}},
-DTLS {{!I-D.ietf-tls-dtls13}}, and Compact TLS {{?I-D.ietf-tls-ctls}}.
 
 # Conventions and Definitions
 
@@ -154,12 +166,14 @@ participating in a connection.
 
 # PSK Security Properties {#sec-properties}
 
-External PSK authentication in TLS allows endpoints to authenticate connections
-using previously established keys. These keys do not provide protection
-of endpoint identities (see {{endpoint-privacy}}), nor do they provide
+When using external PSK authentication, the use of previously established
+keys allows TLS endpoints to authenticate the endpoint identities.  However,
+these keys do not provide privacy protection of endpoint identities
+(see {{endpoint-privacy}}), nor do they provide
 non-repudiation (one endpoint in a connection can deny the conversation).
 Protection of endpoint identities and protection against an endpoint denying
-the conversation are possible when a fresh TLS handshake is performed.
+the conversation are possible only when a fresh TLS handshake that
+authenticates the endpoints with certificates is performed.
 
 PSK authentication security implicitly assumes one fundamental property: each
 PSK is known to exactly one client and one server, and that these never switch
@@ -176,17 +190,18 @@ overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-1. If PSK with DH is used, then compromise of a group member that actively
-completes connections with other group members can read (and modify) traffic.
-1. If PSK without DH is used, then compromise of any group member allows the
-attacker to passively read (and modify) all traffic.
-1. If a group member is compromised, then the attacker can perform all of the above attacks.
+1. If PSK is combined with DH, then compromise of a group member that knows
+the resulting DH shared secret will enable the attacker to read (and modify) traffic.
+1. If PSK is not combined with DH, then compromise of any group member allows the
+attacker to passively read (and actively modify) all traffic.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. Note that this class of attack is
-not possible if each member uses the SNI extension {{!RFC6066}} and terminates the
-connection on mismatch between the presented SNI value and the receiving member's
-known identity. See {{Selfie}} for details.
+to connect them in unintended ways, as described below. Note that this class of attack
+can sometimes be detected by each group member including the SNI extension {{RFC6066}}
+and terminating the connection on mismatch between the presented SNI value and the
+receiving member's known identity. The SNI extension names the server identity,
+but the group members that acting as clients are not identified by the SNI
+extension. See {{Selfie}} for details.
 
 To illustrate the rerouting attack, consider the group of peers who know
 the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
@@ -199,9 +214,9 @@ the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
 1. The attacker redirects the `Finished` message to `C`.
 `C` has completed the handshake with `A`.
 
-This attack violates the peer authentication property, and if `C` supports a
-weaker set of cipher suites than `B`, this attack also violates the downgrade
-protection property. This rerouting is a type of identity misbinding attack
+In this attack, peer authentication is not provided. Also, if `C` supports a
+weaker set of cipher suites than `B`, cryptographic algorithm downgrade attacks
+might be possible. This rerouting is a type of identity misbinding attack
 {{Krawczyk}}{{Sethi}}. Selfie attack {{Selfie}} is a special case of the rerouting
 attack against a group member that can act both as TLS server and client. In the
 Selfie attack, a malicious non-member reroutes a connection from the client to
@@ -227,7 +242,7 @@ attacks will not lead to compromise of the traffic keys for that connection beca
 those also depend on the Diffie-Hellman (DH) exchange. Low entropy keys are only
 secure against active attack if a PAKE is used with TLS. The Crypto Forum Research
 Group (CFRG) is currently working on specifying recommended PAKEs
-(see {{?I-D.irtf-cfrg-cpace}} and {{?I-D.irtf-cfrg-opaque}}, for the symmetric and
+(see {{I-D.irtf-cfrg-cpace}} and {{I-D.irtf-cfrg-opaque}}, for the symmetric and
 asymmetric cases, respectively).
 
 # Privacy Considerations {#endpoint-privacy}
@@ -268,7 +283,7 @@ may use externally provisioned PSKs, primarily for the purposes of establishing 
 connections without requiring the overhead of provisioning and managing PKI certificates.
 
 - Internet of Things (IoT) and devices with limited computational capabilities.
-{{?RFC7925}} defines TLS and DTLS profiles for resource-constrained devices and suggests
+{{RFC7925}} defines TLS and DTLS profiles for resource-constrained devices and suggests
 the use of PSK ciphersuites for compliant devices. The Open Mobile Alliance Lightweight Machine
 to Machine Technical Specification {{LwM2M}} states that LwM2M servers MUST support the
 PSK mode of DTLS.
@@ -283,7 +298,7 @@ between a server and user equipment for authentication {{GAA}}.
 online services with TLS-PSK {{SmartCard}}.
 
 - Quantum resistance: Some deployments may use PSKs (or combine them with certificate-based
-authentication as described in {{?RFC8773}}) because of the protection they provide against
+authentication as described in {{RFC8773}}) because of the protection they provide against
 quantum computers.
 
 There are also use cases where PSKs are shared between more than two entities. Some examples below
@@ -322,7 +337,7 @@ PSK provisioning systems are often constrained in application-specific ways. For
 provisioning is to ensure that each pair of nodes has a unique key pair, some systems do not want to distribute
 pair-wise shared keys to achieve this. As another example, some systems require the provisioning process to embed
 application-specific information in either PSKs or their identities. Identities may sometimes need to be routable,
-as is currently under discussion for EAP-TLS-PSK {{?I-D.mattsson-emu-eap-tls-psk}}.
+as is currently under discussion for EAP-TLS-PSK {{I-D.mattsson-emu-eap-tls-psk}}.
 
 # Recommendations for External PSK Usage {#recommendations}
 
@@ -337,22 +352,22 @@ low-entropy keys are available, then key establishment mechanisms such as Passwo
 Authenticated Key Exchange (PAKE) that mitigate the risk of offline dictionary attacks
 SHOULD be employed. Note that no such mechanisms have yet been standardised, and further
 that these mechanisms will not necessarily follow the same architecture as the
-process for incorporating EPSKs described in {{!I-D.ietf-tls-external-psk-importer}}.
+process for incorporating EPSKs described in {{I-D.ietf-tls-external-psk-importer}}.
 
-2. Unless other accommodations are made, each PSK MUST be restricted in
+2. Unless other accommodations are made to mitigate the risks of PSKs know to a group, each PSK MUST be restricted in
 its use to at most two logical nodes: one logical node in a TLS client
 role and one logical node in a TLS server role. (The two logical nodes
 MAY be the same, in different roles.) Two acceptable accommodations
-are described in {{!I-D.ietf-tls-external-psk-importer}}: (1) exchanging
+are described in {{I-D.ietf-tls-external-psk-importer}}: (1) exchanging
 client and server identifiers over the TLS connection after the
 handshake, and (2) incorporating identifiers for both the client and the
 server into the context string for an EPSK importer.
 
-3. Nodes using TLS 1.3 SHOULD use external PSK importers {{!I-D.ietf-tls-external-psk-importer}}
+3. Nodes using TLS 1.3 SHOULD use external PSK importers {{I-D.ietf-tls-external-psk-importer}}
 when configuring PSKs for a client-server pair. Importers make provisioning
 external PSKs easier and less error prone by deriving a unique, imported PSK from the
 external PSK for each key derivation function a node supports. See the Security Considerations
-in {{!I-D.ietf-tls-external-psk-importer}} for more information.
+in {{I-D.ietf-tls-external-psk-importer}} for more information.
 
 4. Where possible the main PSK (that which is fed into the importer) SHOULD be
 deleted after the imported keys have been generated. This prevents an attacker
@@ -383,7 +398,7 @@ hexadecimal strings. The PSK identity and key size are not validated.
 
 Section 5.1 of {{?RFC4279}} mandates that the PSK identity should be first converted to a character string and then
 encoded to octets using UTF-8. This was done to avoid interoperability problems (especially when the identity is
-configured by human users).  On the other hand, {{?RFC7925}} advises  implementations against assuming any structured
+configured by human users).  On the other hand, {{RFC7925}} advises  implementations against assuming any structured
 format for PSK identities and recommends byte-by-byte comparison for any operation. When PSK identities are configured
 manually it is important to be aware that due to encoding issues visually identical strings may, in fact, differ.
 
@@ -416,16 +431,21 @@ the application will be given precedence over how to handle the PSK.
 
 # Security Considerations {#security-con}
 
+Security considerations are provided throughout this document.  It bears
+repeating that there are concerns related to the use of external PSKs related
+to proper identification of the TLS version 1.3 endpoints and additional
+risks when the external PSKs are know to a group.
+
 It is NOT RECOMMENDED to share the same PSK between more than one client and server.
 However, as discussed in {{use-cases}}, there are application scenarios that may
-rely on sharing the same PSK among multiple nodes. {{!I-D.ietf-tls-external-psk-importer}}
+rely on sharing the same PSK among multiple nodes. {{I-D.ietf-tls-external-psk-importer}}
 helps in mitigating rerouting and Selfie style reflection attacks when the PSK
 is shared among multiple nodes. This is achieved by correctly using the node
 identifiers in the ImportedIdentity.context construct specified in
-{{!I-D.ietf-tls-external-psk-importer}}. It is RECOMMENDED that each endpoint
+{{I-D.ietf-tls-external-psk-importer}}. It is RECOMMENDED that each endpoint
 selects one globally unique identifier and uses it in all PSK handshakes. The
 unique identifier can, for example, be one of its MAC addresses, a 32-byte
-random number, or its Universally Unique IDentifier (UUID) {{?RFC4122}}. Each
+random number, or its Universally Unique IDentifier (UUID) {{RFC4122}}. Each
 endpoint SHOULD know the identifier of the other endpoint with which its wants
 to connect and SHOULD compare it with the other endpoint’s identifier used in
 ImportedIdentity.context. It is however important to remember that endpoints
@@ -452,3 +472,5 @@ Mohit Sethi,
 Oleg Pekar,
 Owen Friel, and
 Russ Housley.
+
+This document was improved by a high quality review by Ben Kaduk.
