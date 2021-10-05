@@ -167,7 +167,7 @@ participating in a connection.
 # PSK Security Properties {#sec-properties}
 
 When using external PSK authentication, the use of previously established
-keys allows TLS endpoints to authenticate the endpoint identities.  However,
+PSKs allows TLS endpoints to authenticate the endpoint identities.  However,
 these keys do not provide privacy protection of endpoint identities
 (see {{endpoint-privacy}}), nor do they provide
 non-repudiation (one endpoint in a connection can deny the conversation).
