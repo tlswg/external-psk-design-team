@@ -432,9 +432,9 @@ the application will be given precedence over how to handle the PSK.
 # Security Considerations {#security-con}
 
 Security considerations are provided throughout this document.  It bears
-repeating that there are concerns related to the use of external PSKs related
-to proper identification of the TLS version 1.3 endpoints and additional
-risks when the external PSKs are know to a group.
+repeating that there are concerns related to the use of external PSKs regarding
+proper identification of TLS 1.3 endpoints and additional risks when external 
+PSKs are known to a group.
 
 It is NOT RECOMMENDED to share the same PSK between more than one client and server.
 However, as discussed in {{use-cases}}, there are application scenarios that may
