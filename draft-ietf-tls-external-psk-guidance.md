@@ -196,12 +196,10 @@ the resulting DH shared secret will enable the attacker to read (and modify) tra
 attacker to passively read (and actively modify) all traffic.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. Note that this class of attack
-can sometimes be detected by each group member including the SNI extension {{RFC6066}}
-and terminating the connection on mismatch between the presented SNI value and the
-receiving member's known identity. The SNI extension names the server identity,
-but the group members that acting as clients are not identified by the SNI
-extension. See {{Selfie}} for details.
+to connect them in unintended ways, as described below. Note that a partial mitigiation
+against this class of attack is available: each group member includes the SNI extension {{RFC6066}}
+and terminates the connection on mismatch between the presented SNI value and the
+receiving member's known identity.  See {{Selfie}} for details.
 
 To illustrate the rerouting attack, consider the group of peers who know
 the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
