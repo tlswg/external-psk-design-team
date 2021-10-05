@@ -131,12 +131,12 @@ provided by TLS 1.3 when external PSKs are used.
 # Introduction
 
 This document provides guidance on the use of external Pre-Shared Keys (PSKs)
-in Transport Layer Security (TLS) version 1.3 {{RFC8446}}. This guidance also
-applies to Datagram TLS (DTLS) version 1.3 {{I-D.ietf-tls-dtls13}} and
-Compact TLS version 1.3 {{I-D.ietf-tls-ctls}}; however, for readability only
-TLS is used in the discussion. External PSKs are symmetric secret keys provided
-to the TLS protocol implementation as external inputs; they are provisioned
-out-of-band. This document lists
+in Transport Layer Security (TLS) 1.3 {{RFC8446}}. This guidance also
+applies to Datagram TLS (DTLS) 1.3 {{I-D.ietf-tls-dtls13}} and
+Compact TLS 1.3 {{I-D.ietf-tls-ctls}}. For readability, this document uses
+the term TLS to refer to all such versions. External PSKs are symmetric 
+secret keys provided to the TLS protocol implementation as external inputs. 
+External PSKs are provisioned out-of-band. This document lists
 TLS security properties provided by PSKs under certain assumptions and
 demonstrates how violations of these assumptions lead to attacks. This
 document discusses PSK use cases, provisioning processes, and TLS stack
