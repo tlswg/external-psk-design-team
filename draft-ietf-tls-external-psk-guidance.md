@@ -458,7 +458,7 @@ This document makes no IANA requests.
 
 This document is the output of the TLS External PSK Design Team, comprised of the following members:
 Benjamin Beurdouche,
-Björn Haase,
+{{{Björn Haase}}},
 Christopher Wood,
 Colm MacCárthaigh,
 Eric Rescorla,
