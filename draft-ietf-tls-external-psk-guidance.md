@@ -229,7 +229,7 @@ are secure against both active and passive attack. However, they lack forward
 security. Forward security may be achieved by using a PSK-DH mode.
 
 In contrast, if a low entropy PSK is used, then PSK-only key establishment modes
-are subject to passive exhaustive search passive attacks which will reveal the
+are subject to passive exhaustive search attacks which will reveal the
 traffic keys. PSK-DH modes are subject to active attacks in which the attacker
 impersonates one side. The exhaustive search phase of these attacks can be mounted
 offline if the attacker captures a single handshake using the PSK, but those
