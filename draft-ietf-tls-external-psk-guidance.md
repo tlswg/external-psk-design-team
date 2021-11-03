@@ -349,7 +349,7 @@ SHOULD be employed. Note that no such mechanisms have yet been standardised, and
 that these mechanisms will not necessarily follow the same architecture as the
 process for incorporating EPSKs described in {{I-D.ietf-tls-external-psk-importer}}.
 
-2. Unless other accommodations are made to mitigate the risks of PSKs know to a group, each PSK MUST be restricted in
+2. Unless other accommodations are made to mitigate the risks of PSKs known to a group, each PSK MUST be restricted in
 its use to at most two logical nodes: one logical node in a TLS client
 role and one logical node in a TLS server role. (The two logical nodes
 MAY be the same, in different roles.) Two acceptable accommodations
