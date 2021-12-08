@@ -63,7 +63,7 @@ informative:
              name: Shay Gueron
      date: 2019
      target: https://eprint.iacr.org/2019/347.pdf
-  Akhmetzyanova:
+  AASS19:
      title: "Continuing to reflect on TLS 1.3 with external PSK"
      author:
          -
@@ -170,11 +170,13 @@ participating in a connection.
 
 # PSK Security Properties {#sec-properties}
 
-When using external PSK authentication, the use of previously established
-PSKs allows TLS endpoints to authenticate the endpoint identities.  However,
-these keys do not provide privacy protection of endpoint identities
-(see {{endpoint-privacy}}), nor do they provide
-non-repudiation (one endpoint in a connection can deny the conversation).
+The use of a previously established PSK allows TLS nodes to authenticate
+the endpoint identities. It also offers other benefits, including
+resistance to attacks in presence of quantum computes;
+see {{entropy}} for related discussion. However, these keys do not provide
+privacy protection of endpoint identities, nor do they provide non-repudiation
+(one endpoint in a connection can deny the conversation); see {{endpoint-privacy}}
+for related discussion.
 
 PSK authentication security implicitly assumes one fundamental property: each
 PSK is known to exactly one client and one server, and that these never switch
@@ -183,18 +185,17 @@ severely weakened as discussed below.
 
 ## Shared PSKs
 
-As discussed in {{use-cases}}, there are use cases where it is
-desirable for multiple clients or multiple servers to share a PSK. If
+As discussed in {{use-cases}}, to demonstrate their attack, {{AASS19}} describes
+scenarios where multiple clients or multiple servers share a PSK. If
 this is done naively by having all members share a common key, then
 TLS authenticates only group membership, and the security of the
 overall system is inherently rather brittle. There are a number of
 obvious weaknesses here:
 
 1. Any group member can impersonate any other group member.
-1. If PSK is combined with DH, then compromise of a group member that knows
-the resulting DH shared secret will enable the attacker to passively read (and
-actively modify) traffic.
-1. If PSK is not combined with DH, then compromise of any group member allows the
+1. If PSK is combined with a fresh ephemeral key exchange, then compromise of a group member that knows
+the resulting shared secret will enable the attacker to passively read (and actively modify) traffic.
+1. If PSK is not combined with fresh ephemeral key exchange, then compromise of any group member allows the
 attacker to passively read (and actively modify) all traffic.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
@@ -226,12 +227,15 @@ Finally, in addition to these weaknesses, sharing a PSK across nodes may negativ
 affect deployments. For example, revocation of individual group members is not
 possible without establishing a new PSK for all of the non-revoked members.
 
-## PSK Entropy
+## PSK Entropy {#entropy}
 
-Entropy properties of external PSKs may also affect TLS security properties. In
-particular, if a high entropy PSK is used, then PSK-only key establishment modes
-are secure against both active and passive attack. However, they lack forward
-security. Forward security may be achieved by using a PSK-DH mode.
+Entropy properties of external PSKs may also affect TLS security properties. For example,
+if a high entropy PSK is used, then PSK-only key establishment modes provide expected
+security properties for TLS, including, for example, including establishing the same
+session keys between peers, secrecy of session keys, peer authentication, and downgrade
+protection. See {{RFC8446, Section E.1}} for an explanation of these properties.
+However, these modes lack forward security. Forward security may be achieved by using a
+PSK-DH mode, or, alternatively, by using PSKs with short lifetimes.
 
 In contrast, if a low entropy PSK is used, then PSK-only key establishment modes
 are subject to passive exhaustive search attacks which will reveal the
@@ -291,7 +295,7 @@ authentication as described in {{RFC8773}}) because of the protection they provi
 quantum computers.
 
 There are also use cases where PSKs are shared between more than two entities. Some examples below
-(as noted by Akhmetzyanova et al.{{Akhmetzyanova}}):
+(as noted by Akhmetzyanova et al. {{AASS19}}):
 
 - Group chats. In this use-case, group participants may be provisioned an external PSK out-of-band for establishing
 authenticated connections with other members of the group.
@@ -335,7 +339,7 @@ as is currently under discussion for EAP-TLS-PSK {{I-D.mattsson-emu-eap-tls-psk}
 Recommended requirements for applications using external PSKs are as follows:
 
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
-128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the
+128 bits long, and SHOULD be combined with an ephemeral key exchange exchange, e.g., by using the
 "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As
 discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
 than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
