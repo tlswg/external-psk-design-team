@@ -429,7 +429,7 @@ internal session resumption cache. This means that if a PSK identity collision o
 the application's external PSK usage will typically take precedence over the internal
 session resumption path.
 
-Since resumption PSK identity is assigned by the TLS stack implementation,
+Since resumption PSK identities are assigned by the TLS stack implementation,
 it is RECOMMENDED that these identifiers be assigned in a manner that lets
 resumption PSKs be distinguished from external PSKs to avoid concerns with
 collisions altogether.
