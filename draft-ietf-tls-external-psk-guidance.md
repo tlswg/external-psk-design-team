@@ -170,9 +170,9 @@ participating in a connection.
 
 # PSK Security Properties {#sec-properties}
 
-When using external PSK authentication, the use of previously established
-PSKs allows TLS nodes to authenticate the endpoint identities. It also offers
-other benefits, including resistance to attacks in presence of quantum computes;
+The use of a previously established PSK allows TLS nodes to authenticate
+the endpoint identities. It also offers other benefits, including
+resistance to attacks in presence of quantum computes;
 see {{entropy}} for related discussion. However, these keys do not provide
 privacy protection of endpoint identities, nor do they provide non-repudiation
 (one endpoint in a connection can deny the conversation); see {{endpoint-privacy}}
