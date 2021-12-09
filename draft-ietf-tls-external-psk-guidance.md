@@ -172,7 +172,7 @@ participating in a connection.
 
 The use of a previously established PSK allows TLS nodes to authenticate
 the endpoint identities. It also offers other benefits, including
-resistance to attacks in presence of quantum computes;
+resistance to attacks in presence of quantum computers;
 see {{entropy}} for related discussion. However, these keys do not provide
 privacy protection of endpoint identities, nor do they provide non-repudiation
 (one endpoint in a connection can deny the conversation); see {{endpoint-privacy}}
@@ -309,7 +309,7 @@ keys for n devices), or have pairwise keys for communicating with each other (n^
 
 The exact provisioning process depends on the system requirements and threat
 model. Whenever possible, avoid sharing a PSK between nodes; however, sharing
-a PSK among several node is sometimes unavoidable. When PSK sharing happens,
+a PSK among several nodes is sometimes unavoidable. When PSK sharing happens,
 other accommodations SHOULD be used as discussed in {{recommendations}}.
 
 Examples of PSK provisioning processes are included below.
@@ -472,7 +472,7 @@ to connect and SHOULD compare it with the other endpoint’s identifier used in
 ImportedIdentity.context. It is however important to remember that endpoints
 sharing the same group PSK can always impersonate each other.
 
-Considerations for external PSK usage extend beynond proper identification.
+Considerations for external PSK usage extend beyond proper identification.
 When early data is used with an external PSK, the random value in the ClientHello
 is the only source of entropy that contributes to key diversity between sessions.
 As a result, when an external PSK is used more than one time, the random number
