@@ -1,0 +1,3529 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2021-02-21T00:08:48.948739+00:00",
+  "repo": "tlswg/external-psk-design-team",
+  "labels": [
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [
+    {
+      "number": 1,
+      "id": "MDU6SXNzdWU1NjkyMzU0ODM=",
+      "title": "Do we need a way to encode PSKs?",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/1",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This would, ideally, prohibit one from encoding PSKs as strings, since that tends to lead to less good PSKs. Think PSK = \"bananas\".",
+      "createdAt": "2020-02-21T23:30:35Z",
+      "updatedAt": "2020-03-17T15:13:18Z",
+      "closedAt": "2020-03-17T15:13:18Z",
+      "comments": [
+        {
+          "author": "BjoernHaase-EH",
+          "authorAssociation": "NONE",
+          "body": "I think that we should be really avoiding this. As mentioned I have a suggestion on how to encode the PSK on my todo list, but will likely only get time starting at the end of the week.\r\nMaybe I could be preparing a 00 version of an I-D for this by monday.",
+          "createdAt": "2020-03-03T16:40:43Z",
+          "updatedAt": "2020-03-03T16:40:43Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "This is fixed by your I-D -- closing!",
+          "createdAt": "2020-03-17T15:13:17Z",
+          "updatedAt": "2020-03-17T15:13:17Z"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "MDU6SXNzdWU1NjkyMzU5OTM=",
+      "title": "Document security assumptions ",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/2",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "... and describe attacks in all-honest (general) model. \r\n\r\n<img width=\"616\" alt=\"Screen Shot 2020-02-21 at 3 32 05 PM\" src=\"https://user-images.githubusercontent.com/2172048/75079931-59c83080-54bf-11ea-8124-58e1460ef121.png\">\r\n",
+      "createdAt": "2020-02-21T23:32:27Z",
+      "updatedAt": "2020-03-01T02:29:58Z",
+      "closedAt": "2020-03-01T02:29:58Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@jhoyla can you take this?",
+          "createdAt": "2020-02-21T23:48:50Z",
+          "updatedAt": "2020-02-21T23:48:50Z"
+        },
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "# Attacks on Properties under shared PSKs\r\n\r\nTLS 1.3 tries to maintain 8 security properties in the handshake.\r\nA na\u00efve sharing of PSKs, even assuming only honest but curious participants know the key, can violate these properties.\r\n\r\n## Establishing the same session keys\r\nLet the group of peers who know the key be A, B, and C.\r\n\r\n1. Let the attacker compromise C.\r\n2. A sends a `ClientHello` to  B. \r\n3. The attacker intercepts it, and passes it to C. \r\n4. C, under the direction of the attacker, sends a `ClientHello` to B, acting as A. \r\n5. B responds C thinking he is responding to A.\r\n6. C responds to A.\r\n7. A completes the handshake ostensibly with B, sending a `Finished` message.\r\n8. C sends a `Finished` message to B.\r\n9. B completes the handshake ostensibly with A.  \r\n\r\nAlthough neither A nor B has been compromised, both have completed a session, ostensibly with each other, but have established different keys. \r\n\r\n## Secrecy of Session Keys\r\nLet the group of peers who know the key be A, B, and C. \r\n\r\n1. Let A complete a PSK handshake with B without performing a fresh DHE.\r\n2. C, an honest but curious agent, knows the PSK and can derive the session key.  \r\n\r\n## Peer authentication\r\nLet the group of peers who know the key be A, B, and C.\r\n\r\n1. A sends a `ClientHello` to B.\r\n2. The attacker redirects the message to C. \r\n3. C responds to A.\r\n4. A completes the handshake ostensibly with B, sending a `Finished` message. \r\n5. The attacker redirects the `Finished` message to C.\r\n6. C completes the handshake ostensibly with A. \r\n\r\n## Uniqueness of session keys\r\nLet the group of peers who know the key be A, B, and C.\r\n\r\n1. Let the attacker compromise C.\r\n2. A sends a `ClientHello` with no key share to C.\r\n3. The attacker repeats the `ClientHello` to B.\r\n4. B responds to C.\r\n5. The attacker repeats the response to A.\r\n6. A completes the handshake ostensibly with C, sending a `Finished` message.\r\n7. The attacker repeats the `Finished` message to B.\r\n8. B completes the handshake ostensibly with C.\r\n\r\nAlthough neither A nor B has been compromised they have each established a session with the attacker with the same key.\r\n\r\n## Downgrade Protection\r\nLet the group of peers who know the key be A, B, and C.\r\nLet A and B support strong and weak cipher suites, but let C support only weaker cipher suites. \r\n\r\n1. A sends a `ClientHello` to B.\r\n2. The attacker redirects the message to C. \r\n3. C responds to A choosing a weak cipher suite.\r\n4. A completes the handshake ostensibly with B, sending a `Finished` message with a weak cipher suite. \r\n5. The attacker redirects the `Finished` message to C.\r\n6. C completes the handshake ostensibly with A. \r\n\r\n\r\n## Forward secret with respect to long-term keys\r\nLet the group of peers who know the key be A, B, and C.\r\n\r\n1. Let A establish a PSK session with B, without a fresh DHE. \r\n2. Let the attacker record the session.\r\n3. Let the attacker compromise C. \r\n \r\nThe attacker can decrypt the recorded session, even though she compromised C _after_ A and B completed their session. \r\n\r\n## Key Compromise Impersonation (KCI) resistance\r\nLet the group of peers who know the key be A, B, and C.\r\n\r\n1. Let the attacker compromise A.\r\n2. A sends a `ClientHello` to B.\r\n3. The attacker intercepts the `ClientHello` and responds using the PSK learned from A.\r\n4. A completes the handshake ostensibly with B, sending a `Finished` message.\r\n\r\nAlthough B was never compromised the attacker is able to impersonate B to A. \r\n\r\n\r\n## Protection of endpoint identities\r\nAlthough this has not seen any analysis, this appears to be secure, because even honest entities cannot distinguish each other. \r\n",
+          "createdAt": "2020-02-24T21:14:45Z",
+          "updatedAt": "2020-02-24T21:14:45Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #10.",
+          "createdAt": "2020-03-01T02:29:58Z",
+          "updatedAt": "2020-03-01T02:29:58Z"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "id": "MDU6SXNzdWU1NjkyMzk2MDA=",
+      "title": "Document stack implementations and APIs for external PSKs",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/3",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [
+        "chris-wood"
+      ],
+      "labels": [],
+      "body": "# OpenSSL/BoringSSL\r\n\r\nApplications configure callbacks that are invoked to select PSKs. These callbacks must provide the PSK identity (`char *`) and key (`unsigned char *) given a server PSK hint (`char *`).\r\n\r\n- https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_set_psk_client_callback.html\r\n\r\n# mbedTLS\r\n\r\nmbedTLS also treats PSKs as arbitrary byte arrays and character strings.\r\n\r\n... from https://github.com/ARMmbed/mbedtls/blob/development/programs/ssl/ssl_client2.c:\r\n\r\n```\r\n    const char *psk;            /* the pre-shared key                       */\r\n    const char *psk_identity;   /* the pre-shared key identity              */\r\n```\r\n\r\n```\r\nmbedtls_ssl_conf_psk (mbedtls_ssl_config *conf, const unsigned char *psk, size_t psk_len, const unsigned char *psk_identity, size_t psk_identity_len)\r\n```\r\n\r\n- https://tls.mbed.org/api/ssl_8h.html\r\n- https://tls.mbed.org/api/ssl_8h.html#a1e185199e3ff613bdd1c8231a19e24fc\r\n\r\n# gnuTLS\r\n\r\nApplications specify a \"username\" (as the PSK identity) and a raw PSK. \r\n\r\n- https://www.gnutls.org/manual/html_node/Authentication-using-PSK.html\r\n- http://man7.org/linux/man-pages/man3/gnutls_psk_set_client_credentials.3.html\r\n\r\n# wolfSSL\r\n\r\nCallback style (with identical key and identity types) similar to OpenSSL. There is no minimum length enforced for the PSK.\r\n\r\n- https://www.wolfssl.com/using-pre-shared-keys-psk-with-wolfssl-2/\r\n- https://github.com/wolfSSL/wolfssl-examples/blob/master/psk/client-psk-nonblocking.c",
+      "createdAt": "2020-02-21T23:47:16Z",
+      "updatedAt": "2020-02-26T03:43:59Z",
+      "closedAt": "2020-02-26T03:43:48Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #4.",
+          "createdAt": "2020-02-26T03:43:59Z",
+          "updatedAt": "2020-02-26T03:43:59Z"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "id": "MDU6SXNzdWU1NzA2Nzg2MDk=",
+      "title": "Expand stack behavior section",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/6",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "> I think we should also discuss what kind of matching is done on the PSK identity. For example, RFC 7925 says: \"For use with this profile, the PSK identities SHOULD NOT assume a structured format (such as domain names, distinguished names, or IP addresses), and a byte-by-byte comparison operation MUST be used by the server for any operation related to the PSK identity.\"\r\n\r\n> Similarly, RFC 4279 in Section 5.1 describes the UTF-8 encoding of identities to improve interoperability for those cases where the identity is configured by a human using some management interface.\r\n\r\n> If in TLS 1.3, the identity is only used as a hint for looking up the correct PSK in the database, then this would be a significant departure from what was the norm previously. Highlighting this in our document would make sense.\r\n\r\n> The current text also says 'These callbacks must provide the PSK identity (as a character string)'. But the openssl s_server and s_client seem to work without providing PSK identities and use the default character string 'Client_identity' as the psk_identity.",
+      "createdAt": "2020-02-25T16:06:41Z",
+      "updatedAt": "2020-03-01T02:29:26Z",
+      "closedAt": "2020-03-01T02:29:26Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s do you want to take a stab at this?",
+          "createdAt": "2020-02-27T03:28:04Z",
+          "updatedAt": "2020-02-27T03:28:04Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #10.",
+          "createdAt": "2020-03-01T02:29:26Z",
+          "updatedAt": "2020-03-01T02:29:26Z"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "id": "MDU6SXNzdWU1NzA2ODg1NDY=",
+      "title": "Recommendation text",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/7",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "1. Start with the general recommendation and invariant: Identities should be unique across all nodes, roles, and keys. \r\n2. For each use case, how a part of the invariant is violated and leads to one of the known attacks.",
+      "createdAt": "2020-02-25T16:21:04Z",
+      "updatedAt": "2020-03-01T02:29:17Z",
+      "closedAt": "2020-03-01T02:29:16Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #11.",
+          "createdAt": "2020-03-01T02:29:16Z",
+          "updatedAt": "2020-03-01T02:29:16Z"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "id": "MDU6SXNzdWU1NzA2OTU2ODg=",
+      "title": "Add normative text to use PSK importers",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/8",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-02-25T16:46:47Z",
+      "updatedAt": "2020-03-01T02:29:09Z",
+      "closedAt": "2020-03-01T02:29:08Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #11.",
+          "createdAt": "2020-03-01T02:29:08Z",
+          "updatedAt": "2020-03-01T02:29:08Z"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "id": "MDU6SXNzdWU1NzA2OTY0Njk=",
+      "title": "Recommend minimum PSK length",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/9",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "... and don\u2019t prohibit or otherwise interfere with PAKEs. (Though we may want to state that PAKEs should produce PSKs that adhere to this limit if run out of band.)",
+      "createdAt": "2020-02-25T16:47:32Z",
+      "updatedAt": "2020-03-01T02:29:01Z",
+      "closedAt": "2020-03-01T02:29:00Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed in #11.",
+          "createdAt": "2020-03-01T02:29:00Z",
+          "updatedAt": "2020-03-01T02:29:00Z"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "id": "MDU6SXNzdWU1NzQ3ODA1NDM=",
+      "title": "Guidance on PSK and identifier structure",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/15",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "- PSKs: Minimum length? Minimum derivation entropy?\r\n- Identifiers: Can it be any length? Maybe it just needs to be unique to the application?",
+      "createdAt": "2020-03-03T16:16:33Z",
+      "updatedAt": "2020-03-23T02:25:14Z",
+      "closedAt": "2020-03-23T02:25:14Z",
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Does the PSK identity need to have entropy? Can't it be user configurable? EAP identities are generally a NAI (RFC 7542). They look like an email address and are in many cases configured by the user through a GUI. ",
+          "createdAt": "2020-03-17T13:37:27Z",
+          "updatedAt": "2020-03-17T13:37:27Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Discussed on the call -- I don't think we can say anything meaningful here beyond \"it needs to make sense to the application.\" @ms-s, can you please propose text?",
+          "createdAt": "2020-03-23T02:21:31Z",
+          "updatedAt": "2020-03-23T02:21:31Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Let's fold this into #17!",
+          "createdAt": "2020-03-23T02:25:13Z",
+          "updatedAt": "2020-03-23T02:25:13Z"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "id": "MDU6SXNzdWU1NzQ3ODEzMzc=",
+      "title": "Russ's feedback",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/16",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Section 3.1.1: The text says:\r\n\r\n   3.  C responds with to A.\r\n\r\nI think that C responds with a ServerHello to A.\r\n\r\n\r\nSection 3.1.2:  The text says:\r\n\r\n   1.  A sends a ClientHello to B, without including a key share.\r\n\r\nIt would be helpful to say \"without including a key share extension.\"\r\n\r\n\r\nSection 3.1.3: I think a bit more explanation is needed here.  Nonces can make the keys different, why doesn't the nonce from the uncompromised party help in this example?\r\n\r\n\r\nSection 4: I would like to see a bit more context here.  I agree with the recommendations for the intended environment, but they are overkill in the environment suggested by draft-ietf-tls-tls13-cert-with-extern-psk.  In fact, they are overkill if (EC)DH is combined with the PSK at all.  So, maybe we just need to say that the PSK is not combined with a pairwise key that these rules apply.",
+      "createdAt": "2020-03-03T16:17:41Z",
+      "updatedAt": "2020-03-03T17:53:14Z",
+      "closedAt": "2020-03-03T17:53:14Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Fixed by #20.",
+          "createdAt": "2020-03-03T17:53:14Z",
+          "updatedAt": "2020-03-03T17:53:14Z"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "id": "MDU6SXNzdWU1NzQ3ODM3MzQ=",
+      "title": "Clarify identity mismatch behavior",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/17",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "What should servers do if they get an identity which doesn't match a known key? Do they send an alert or try any PSK? (OpenSSL does the latter, it seems.)\r\n\r\n   unknown_psk_identity:  Sent by servers when PSK key establishment is\r\n      desired but no acceptable PSK identity is provided by the client.\r\n      Sending this alert is OPTIONAL; servers MAY instead choose to send\r\n      a \"decrypt_error\" alert to merely indicate an invalid PSK\r\n      identity.",
+      "createdAt": "2020-03-03T16:21:03Z",
+      "updatedAt": "2020-03-27T23:45:10Z",
+      "closedAt": "2020-03-27T23:45:10Z",
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Currently, any identity is accepted as long as a matching PSK is found. For example:\r\nopenssl s_server -accept 4433 -psk 1a2b3c4d -nocert -tls1_3 -psk_identity 'test' -trace and\r\nopenssl s_client -connect 127.0.0.1:4433 -psk 1a2b3c4d -sess_out sesion -tls1_3 -psk_identity 'wewe' -trace\r\n\r\nresults in successful connection even though psk_identity at server 'test' does not match psk_identity at client 'wewe'.\r\n\r\nServer should either send a fatal \"decrypt_error\" alert or then \"unknown_psk_identity\" alert.",
+          "createdAt": "2020-03-03T16:26:06Z",
+          "updatedAt": "2020-03-03T16:26:06Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "We should also clarify badness that comes from identity collisions. @ms-s, can you please take this?",
+          "createdAt": "2020-03-23T02:24:27Z",
+          "updatedAt": "2020-03-23T02:24:27Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Closing in favor of #22.",
+          "createdAt": "2020-03-27T23:45:10Z",
+          "updatedAt": "2020-03-27T23:45:10Z"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "id": "MDU6SXNzdWU1NzQ3ODYzMDY=",
+      "title": "Discourage widely shared secrets (group chats) ",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/18",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "And maybe cite MLS? Or not.",
+      "createdAt": "2020-03-03T16:25:02Z",
+      "updatedAt": "2020-03-27T23:45:40Z",
+      "closedAt": "2020-03-27T23:45:40Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s can you take this?",
+          "createdAt": "2020-03-17T15:28:44Z",
+          "updatedAt": "2020-03-17T15:28:44Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "This should be done. @ms-s, please re-open if not.",
+          "createdAt": "2020-03-27T23:45:40Z",
+          "updatedAt": "2020-03-27T23:45:40Z"
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "id": "MDU6SXNzdWU1NzQ3OTc4MTc=",
+      "title": "Discuss more topologies",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/19",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [
+        "chris-wood"
+      ],
+      "labels": [],
+      "body": "Each node in a mesh has a key and uses it to derive pair-wise keys (using node identifiers -- MAC addresses?) online.",
+      "createdAt": "2020-03-03T16:42:31Z",
+      "updatedAt": "2020-03-27T23:45:24Z",
+      "closedAt": "2020-03-27T23:45:24Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Closing as OBE.",
+          "createdAt": "2020-03-27T23:45:24Z",
+          "updatedAt": "2020-03-27T23:45:24Z"
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "id": "MDU6SXNzdWU1Nzc5MTU4MTQ=",
+      "title": "Discuss resumption vs external PSK usage",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/22",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Starter text from @upros!\r\n\r\n```\r\n### External PSK versus Resumption PSK Handling\r\n\r\n  [[TODO: this section needs TLS stack implementers guidance]]\r\n\r\n  On receipt of a `ClientHello` containing  PSK identity, OpenSSL appears to callback to the application first in order to allow the application to check if the PSK is an externally provisioned PSK: https://github.com/openssl/openssl/blob/master/ssl/statem/extensions_srvr.c#L1093. If the application cannot find the external PSK idenitty in its external cache, the TLS stack will then check its resumption cache. We need to document TLS stack vs. application implementers guidance about the sequencing of handling of External vs. Resumption PSKs.\r\n```",
+      "createdAt": "2020-03-09T13:38:33Z",
+      "updatedAt": "2020-03-30T22:15:44Z",
+      "closedAt": "2020-03-30T22:15:44Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@upros can you please take this?",
+          "createdAt": "2020-03-17T15:31:06Z",
+          "updatedAt": "2020-03-17T15:31:06Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Ping @upros!",
+          "createdAt": "2020-03-23T02:14:31Z",
+          "updatedAt": "2020-03-23T02:14:31Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Closed by #32.",
+          "createdAt": "2020-03-30T22:15:42Z",
+          "updatedAt": "2020-03-30T22:15:42Z"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "id": "MDU6SXNzdWU1ODMwOTQ1MDY=",
+      "title": "Describe PSK variant security properties",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/26",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [
+        "ekr"
+      ],
+      "labels": [],
+      "body": "Discuss the different variants:\r\n\r\n1. High entropy PSK+DH\r\n2. High entropy PSK-only\r\n3. Low PSK with strong (balanced) PAKE\r\n\r\n... and their security properties.\r\n\r\nFor encodings, mention RFC1751 and Bjorn's draft.",
+      "createdAt": "2020-03-17T15:24:21Z",
+      "updatedAt": "2020-03-24T14:54:03Z",
+      "closedAt": "2020-03-24T14:54:03Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Proposed text:\r\n\r\nIf a high entropy PSK is used, then PSK-only key establishment modes\r\nare secure against both active and passive attack, but will not enjoy\r\nforward security. Forward security may be achieved by using a PSK-DH\r\nmode.\r\n\r\nIf a low entropy PSK is used, then PSK-only key establishment modes\r\nare subject to passive exhaustive search passive attacks which\r\nwill reveal the traffic keys. PSK-DH modes are subject to active\r\nattacks in which the attacker impersonates one side. The exhaustive\r\nsearch phase of these attacks can be mounted offline if the attacker\r\ncaptures a single handshake using the PSK, but those attacks will\r\nnot lead to compromise of the traffic keys for that connection\r\nbecause those also depend on the DH exhange. Low entropy keys\r\nare only secure against active attack if a PAKE is used with TLS.",
+          "createdAt": "2020-03-18T15:36:24Z",
+          "updatedAt": "2020-03-18T15:36:24Z"
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "id": "MDU6SXNzdWU1ODMwOTcyNDc=",
+      "title": "Update PSK usage guidance text",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/27",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [
+        "chris-wood"
+      ],
+      "labels": [],
+      "body": "Summary: use a high-entropy PSK with DH, otherwise, with a low-entropy PSK, use a PAKE. \r\n\r\nReference appendix with security properties from @ekr.",
+      "createdAt": "2020-03-17T15:28:10Z",
+      "updatedAt": "2020-03-24T19:53:26Z",
+      "closedAt": "2020-03-24T19:53:26Z",
+      "comments": []
+    },
+    {
+      "number": 28,
+      "id": "MDU6SXNzdWU1ODMxMDAwMTM=",
+      "title": "Clarify badness that comes from identity collisions",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/28",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "cc @ms-s ",
+      "createdAt": "2020-03-17T15:31:49Z",
+      "updatedAt": "2020-03-23T02:24:09Z",
+      "closedAt": "2020-03-23T02:24:01Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Ping @ms-s!",
+          "createdAt": "2020-03-23T02:14:46Z",
+          "updatedAt": "2020-03-23T02:14:46Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Duping to #17.",
+          "createdAt": "2020-03-23T02:24:09Z",
+          "updatedAt": "2020-03-23T02:24:09Z"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "id": "MDU6SXNzdWU2MDQ5MDMyNTg=",
+      "title": "Address Verisign's review",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/33",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "https://mailarchive.ietf.org/arch/msg/tls/bzLaqkObq5p-KYHb4m7y263Z_aA/",
+      "createdAt": "2020-04-22T16:43:09Z",
+      "updatedAt": "2020-06-18T03:25:19Z",
+      "closedAt": "2020-06-18T03:25:19Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Rephrase requirement 1 as:\r\n\r\n> \"If only low-entropy keys are available, then key establishment \r\n> mechanisms such as Password Authenticated Key Exchange (PAKE) that \r\n> mitigate the risk of offline dictionary attacks MUST be employed.  Note \r\n> that these mechanisms do not necessarily follow the same architecture \r\n> as the ordinary process for incorporating EPSKs described in this \r\n> draft.\"\r\n\r\nRephrase requirement 2 as:\r\n\r\n> \"Unless other accommodations are made, each PSK MUST be restricted in \r\n> its use to at most two logical nodes:  one logical node in a TLS client \r\n> role and one logical node in a TLS server role.  (The two logical nodes \r\n> MAY be the same, in different roles.)  Two acceptable accommodations \r\n> are described in [draft-ietf-tls-external-psk-importer]:  exchanging \r\n> client and server identifiers  over the TLS connection after the \r\n> handshake; and incorporating identifiers  for both the client and the \r\n> server into the context string for an EPSK importer.\"\r\n\r\nAdd some missing definitions, likely in a separate definitions section.\r\n\r\n> Related to this, \"logical node\" should be defined somewhere, e.g., \"For \r\n> purposes of this document, a logical node is a computing presence that \r\n> other parties can interact with via the TLS protocol.  A logical node \r\n> could potentially be realized with multiple physical instances \r\n> operating under common administrative control, e.g., a server farm.\"  \r\n> Alternatively, the term \"endpoint,\" which is used elsewhere in this \r\n> document, could be used here as well (perhaps also avoiding the single \r\n> use of \"agent\").",
+          "createdAt": "2020-04-22T17:09:58Z",
+          "updatedAt": "2020-04-22T17:09:58Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Addressed by #34.",
+          "createdAt": "2020-06-18T03:25:19Z",
+          "updatedAt": "2020-06-18T03:25:19Z"
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "id": "MDU6SXNzdWU2NzM0Mjg3MDY=",
+      "title": "PSK privacy implications",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/36",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Carrick Bartle in her review writes:\r\n>  Applications should take precautions when using external PSKs to mitigate these risks.\r\nWhat sort of precautions should they take?\r\n\r\nDo we want to make any recommendations. Jim Schaad provided some recommendation on the mailing list:\r\nhttps://mailarchive.ietf.org/arch/msg/tls/CJ0YrVI9Gy7LFE032xytwrz7mmo/ \r\n\r\n[JLS] There are going to be three different cases for external PSK identities: The identity if factory provisioned and carried in a file to the server,  the identity is factory provisioned and read by the user from the device, and it is hand chosen.  The first two cases can definitely be randomized.  I don\u2019t know that having a minimum length makes any difference.  This is not exactly a cryptographic property.  Another thing that might be done would be analogous to the PSK importer document and apply a one way hash from the typed in value to the value that is sent over the wire so on the wire it is just a random set of bytes.",
+      "createdAt": "2020-08-05T10:23:00Z",
+      "updatedAt": "2020-11-02T17:15:50Z",
+      "closedAt": "2020-11-02T17:15:49Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "nit: s/his/her :-)",
+          "createdAt": "2020-08-18T15:02:22Z",
+          "updatedAt": "2020-08-18T15:02:22Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Isn't there a fourth case JLS didn't mention, namely some other out-of-band provisioning over a secure connection? In that case, a new PSK could be provisioned after each use. (This might seem silly, but I've seen two separate use-cases for this.)\r\n\r\nAlternatively, in any of those cases, is it feasible to do some sort of ratcheting? (This is sort of expanding on the last sentence in JLS's paragraph.)",
+          "createdAt": "2020-08-18T23:15:48Z",
+          "updatedAt": "2020-08-18T23:15:48Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Hmm, @cbartle891, there is. I'm wary about writing down any sort of recommendation here, though, as they would probably require analysis. (In contrast to the recommendations about PSK length, for which we understand the requirements quite well, I don't think we have a good way to reason about techniques to deal with external PSK privacy... yet.)",
+          "createdAt": "2020-08-18T23:56:05Z",
+          "updatedAt": "2020-08-18T23:56:05Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "In that case, I'm in favor of deleting this line: \"Applications should take precautions when using external PSKs to mitigate these risks.\" Mentioning precautions we don't describe is less helpful than not mentioning them at all (since it's confusing).\r\n\r\nEven better though would be to state that such precautions are an open problem that require analysis.",
+          "createdAt": "2020-08-19T01:14:36Z",
+          "updatedAt": "2020-08-19T01:14:36Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Yep, that seems reasonable to me!",
+          "createdAt": "2020-08-19T01:15:29Z",
+          "updatedAt": "2020-08-19T01:15:29Z"
+        },
+        {
+          "author": "jimsch",
+          "authorAssociation": "NONE",
+          "body": "@cbartle891 - At this point I would implement the - lets roll over the PSK on each use into the case of issuing tokens and just void the PSK (and token) on the first usage.",
+          "createdAt": "2020-08-19T16:22:20Z",
+          "updatedAt": "2020-08-19T16:22:20Z"
+        },
+        {
+          "author": "jimsch",
+          "authorAssociation": "NONE",
+          "body": "@chris-wood What type of analysis are you looking for on this?  It hardly needs to have a cryptographic analysis since this is not a cryptographic property.   Are you looking for some analysis that the input and output cannot be correlated?",
+          "createdAt": "2020-08-19T16:25:19Z",
+          "updatedAt": "2020-08-19T16:25:19Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> @chris-wood What type of analysis are you looking for on this? It hardly needs to have a cryptographic analysis since this is not a cryptographic property. Are you looking for some analysis that the input and output cannot be correlated?\r\n\r\nMinimally, yes.",
+          "createdAt": "2020-08-19T17:27:17Z",
+          "updatedAt": "2020-08-19T17:27:26Z"
+        },
+        {
+          "author": "jimsch",
+          "authorAssociation": "NONE",
+          "body": "While it may be odd - you could ask the PSK importer document to do this and just note the privacy problem here.",
+          "createdAt": "2020-08-19T17:46:48Z",
+          "updatedAt": "2020-08-19T17:46:48Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@jimsch would you mind proposing text (preferably for this document)?",
+          "createdAt": "2020-08-19T18:14:00Z",
+          "updatedAt": "2020-08-19T18:14:20Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@jimsch What sort of tokens are you referring to?",
+          "createdAt": "2020-08-19T22:52:05Z",
+          "updatedAt": "2020-08-19T22:52:05Z"
+        },
+        {
+          "author": "jimsch",
+          "authorAssociation": "NONE",
+          "body": "@cbartle891 In this case the token should be ticket.  I have token on the brain because that is what we use for a similar idea in ACE.",
+          "createdAt": "2020-08-22T15:24:25Z",
+          "updatedAt": "2020-08-22T15:24:25Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s @cbartle891, do you think this issue is resolved?",
+          "createdAt": "2020-11-01T01:25:20Z",
+          "updatedAt": "2020-11-01T01:25:20Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Yep!",
+          "createdAt": "2020-11-02T17:11:24Z",
+          "updatedAt": "2020-11-02T17:11:24Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Excellent -- closing as is!",
+          "createdAt": "2020-11-02T17:15:49Z",
+          "updatedAt": "2020-11-02T17:15:49Z"
+        }
+      ]
+    },
+    {
+      "number": 41,
+      "id": "MDU6SXNzdWU2ODE0MTQ5ODE=",
+      "title": "Watson's review",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/41",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "From [Watson's feedback on the list](https://mailarchive.ietf.org/arch/msg/tls/MKBcycX3Qbz-_XSTNfPFobWTxV0/):\r\n\r\n> In particular  \"SHOULD be combined with a DH exchange for forward\r\n> secrecy.\" I would like to see rephrased to make clear that this is\r\n> about the TLS PSK Key Exchange Mode. It wasn't immediately clear to me\r\n> on first read, especially given the next sentence is (maybe) about key\r\n> establishment outside of TLS.\r\n\r\nGood suggestion. Let's clarify!\r\n\r\n> \"If only low-entropy keys are available, then key establishment\r\n> mechanisms such as Password Authenticated Key Exchange (PAKE) that\r\n> mitigate the risk of offline dictionary attacks SHOULD be employed\".\r\n> I have some questions about the meaning of this sentence. If it's\r\n> about potential future additions to TLS ciphersuites, then it should\r\n> be more clear that this doesn't currently exist and will in the\r\n> future.  If it's about designing an ad-hoc key distribution mechanism\r\n> to be run one time ahead of PSK TLS, then I think we should say so\r\n> more clearly and provide guidance on how to do this and think through\r\n> the implications.\r\n\r\nMy interpretation was that it speaks of the future :-) We can clarify this. \r\n\r\n> Section 7.1.1. While it's a good idea to compare byte by byte, humans\r\n> entering PSK identifiers may run into trouble due to all the ways\r\n> visually identical strings may not actually be identical. It might be\r\n> worth calling this out as a consideration.\r\n\r\nThat seems reasonable. I'll propose text.",
+      "createdAt": "2020-08-18T23:44:41Z",
+      "updatedAt": "2020-11-01T01:19:06Z",
+      "closedAt": "2020-11-01T01:19:06Z",
+      "comments": []
+    },
+    {
+      "number": 44,
+      "id": "MDU6SXNzdWU2ODE0NjI1ODM=",
+      "title": "Why use both certificates and a PSK on the same connection?",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/44",
+      "state": "CLOSED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "(This question is copied from my email.)\r\n\r\nThe draft states: \"To perform rare system specific operations that require a higher security level, the central server can request resource-intensive client authentication with the usage of a certificate after successfully establishing the connection with a PSK.\"\r\n\r\nIf you're going to authenticate with a cert, why bother preceding that \r\nwith an authentication with a PSK?",
+      "createdAt": "2020-08-19T00:33:51Z",
+      "updatedAt": "2020-11-01T01:22:16Z",
+      "closedAt": "2020-11-01T01:22:16Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s can you please take this?",
+          "createdAt": "2020-08-19T14:23:58Z",
+          "updatedAt": "2020-08-19T14:23:58Z"
+        },
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "#45  and this refer to the same use-case and can be merged.\r\n\r\nThis use-case is described in the publication by Akhmetzyanova et al. https://eprint.iacr.org/2019/421.pdf. See section 4. In the scenario described by the authors, resource-constrained IoT devices are TLS clients. The PSK is used for authenticating the central server and client membership of the system. Only for rare device-specific operations requiring a higher-security level (such as device firmware update), the server can request resource-intensive client authentication with certificates after successfully establishing the connection with PSK. This deployment may seem somewhat artificial but it was necessary \r\nin the paper to explain the possible attack scenarios.\r\n\r\nAlso answered on the mailing list here: https://mailarchive.ietf.org/arch/msg/tls/jdTQu9O-3WS2efav_ciI1uKf9mQ/",
+          "createdAt": "2020-08-20T06:16:31Z",
+          "updatedAt": "2020-08-20T06:16:31Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "That rephrases the content in the draft; I guess what I'm asking for is a brief explanation as to why authenticating the client with a certificate is necessary to circumvent those attack scenarios.",
+          "createdAt": "2020-09-01T23:52:44Z",
+          "updatedAt": "2020-09-01T23:52:44Z"
+        }
+      ]
+    },
+    {
+      "number": 45,
+      "id": "MDU6SXNzdWU2ODE0ODQ1NzE=",
+      "title": "Why do all IoT clients on a system need the same PSK?",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/45",
+      "state": "CLOSED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "(This question is copied from my email.)\r\n\r\nThe draft states: \"In this use-case, resource-constrained IoT devices act as TLS clients and share the same PSK. The devices use this PSK for quickly establishing connections with a central server. Such a scheme ensures that the client IoT devices are legitimate members of the system.\"\r\n\r\nIf the IoT devices only talk to a central server and not each other, why do they all need the same PSK? That doesn't seem like a good idea, given that the clients can then impersonate each other and listen in on each other's traffic.",
+      "createdAt": "2020-08-19T01:40:59Z",
+      "updatedAt": "2020-11-01T01:22:18Z",
+      "closedAt": "2020-11-01T01:22:18Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s can you please take this?",
+          "createdAt": "2020-08-19T14:23:41Z",
+          "updatedAt": "2020-08-19T14:23:41Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The explanation in https://github.com/tlswg/external-psk-design-team/issues/44 doesn't address why it's okay or desirable for all the clients to have the same PSK. The clients are constrained, being IoT devices, but the server isn't, and presumably can handle n PSKs for n clients.",
+          "createdAt": "2020-09-01T23:55:15Z",
+          "updatedAt": "2020-09-01T23:55:15Z"
+        },
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "The best argument I can come up with for why a server might want all devices to have the same key is if there are many devices and a high rate of turnover. Rather than trying to keep track of rapidly changing list of keys, perhaps it is easier to just use a single key, especially if there is a high penalty if a device is unable to connect.\r\nFurther, if the devices have a way of upgrading to a more secure connection when necessary, then the central server may not care if devices can impersonate one another.\r\nNot sure it's very convincing, but perhaps at least plausible?",
+          "createdAt": "2020-09-14T11:29:21Z",
+          "updatedAt": "2020-09-14T11:29:21Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I don't think we need to rationalize the use case. The point of this section is to *document* known use cases, not *justify* them, and to provide recommendations for using PSKs in such circumstances. \r\n\r\n@cbartle891: I'm not sure what action you're looking for here. Justification is out of scope, I think.",
+          "createdAt": "2020-09-14T15:22:08Z",
+          "updatedAt": "2020-09-14T15:22:08Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "You can close this then, since this relates to the discussion elsewhere about justification.",
+          "createdAt": "2020-09-15T21:31:16Z",
+          "updatedAt": "2020-09-15T21:31:16Z"
+        }
+      ]
+    },
+    {
+      "number": 47,
+      "id": "MDU6SXNzdWU2ODE1NDA2MjQ=",
+      "title": "Further detail needed on distributing pair-wise keys",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/47",
+      "state": "CLOSED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "(Also adding this question from the email.)\r\n\r\nThe draft states: \"PSK provisioning systems are often constrained in application-specific ways. For example, although one goal of provisioning is to ensure that each pair of nodes has a unique key pair, some systems do not want to distribute pair-wise shared keys to achieve this.\"\r\n\r\nWhy wouldn't a system want to distribute pair-wise keys? What application-specific constraint would warrant that? (I'm imagining, for instance, that maybe that would overload the network or something, but the reason should probably be explained rather than left to the imagination.)",
+      "createdAt": "2020-08-19T04:40:26Z",
+      "updatedAt": "2020-11-01T01:22:18Z",
+      "closedAt": "2020-11-01T01:22:18Z",
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s can you please take this?",
+          "createdAt": "2020-08-19T14:23:50Z",
+          "updatedAt": "2020-08-19T14:23:50Z"
+        },
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "This text is based on the input from Bj\u00f6rn Haase. Essentially, he indicated that some industrial control deployments do not want to have O(n^2) keys for a system with n nodes, but they do want to minimize sharing. I am fine with changing it to \"might not want to\" or removing this constraint completely. \r\n\r\nAlso answered on the mailing list here: https://mailarchive.ietf.org/arch/msg/tls/jdTQu9O-3WS2efav_ciI1uKf9mQ/\r\n\r\n",
+          "createdAt": "2020-08-20T06:13:23Z",
+          "updatedAt": "2020-08-20T06:13:23Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Ah, that seems like an important point to mention. It makes sense that provisioning O(n^2) keys would be overburdensome on a system, but if it doesn't, there are security trade-offs, right?",
+          "createdAt": "2020-08-21T18:26:32Z",
+          "updatedAt": "2020-08-21T18:26:32Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> Ah, that seems like an important point to mention. It makes sense that provisioning O(n^2) keys would be overburdensome on a system, but if it doesn't, there are security trade-offs, right?\r\n\r\nYep. @cbartle891: what sort of change are you looking for here? ",
+          "createdAt": "2020-09-14T15:23:24Z",
+          "updatedAt": "2020-09-14T15:23:24Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@jhoyla's change works for me.",
+          "createdAt": "2020-09-15T21:36:15Z",
+          "updatedAt": "2020-09-15T21:36:15Z"
+        }
+      ]
+    },
+    {
+      "number": 48,
+      "id": "MDU6SXNzdWU2ODE4ODM2ODQ=",
+      "title": "Jim's review",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/48",
+      "state": "CLOSED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "* In section 4 there is a statement that switching the roles of servers\r\nwhich use PSKs will lead to weakening of security properties.  As this is a\r\ncommon scenario today in situations where you are doing server-to-server\r\ncommunication, it would be useful to discuss just how and how much this\r\nweakening occurs.  This was a complete surprise to me and I don't know if it\r\nwas supposed to be one.  Are there mitigations that can be made?\r\n\r\n* In section 7, The first sentence does not read, also It seems a bit\r\ndifficult to have a MUST in there when most of the items below are SHOULDs.\r\nThat seems to be a dissonance.\r\n\r\n* Section 7.1.1 - The idea of having domain name suffixes on PSKs seems to\r\nme to be a bad idea as this would seem to lower privacy levels.\r\n\r\n* Section 7.1.2 - There seem to me to be three different places where\r\ncollisions will occur.  The importer function could get a collision, there\r\ncould be collisions with pre-TLS 1.2 external identifiers and there could be\r\ncollision with resumption keys.  There has been a huge discussion about this\r\nin the EMU group and I don't find the text here to be sensible in term of\r\nwhether this is or is not a problem.\r\n\r\n* Section 7.1.2 - One of the things that I kept meaning to get to and just\r\nhaven't done so yet, is dealing with the question of can the TLS Key binders\r\nin the handshake to distinguish between multiple keys that happen to have\r\nthe same identity.  Perhaps you should look to see if this does work and if\r\nit is safe.",
+      "createdAt": "2020-08-19T14:24:38Z",
+      "updatedAt": "2020-11-03T13:43:37Z",
+      "closedAt": "2020-11-03T13:43:37Z",
+      "comments": []
+    },
+    {
+      "number": 50,
+      "id": "MDU6SXNzdWU2ODIyMzg0MDk=",
+      "title": "The \"ordinary process\" of incorporating external PSKs",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/50",
+      "state": "CLOSED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "(This question is copied from my email with greater context from the draft.)\r\n\r\nSection 7.1 is the following:\r\n\r\n\"Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange for forward secrecy. As discussed in Section 4, low entropy PSKs, i.e., those derived from less than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only low-entropy keys are available, then key establishment mechanisms such as Password Authenticated Key Exchange (PAKE) that mitigate the risk of offline dictionary attacks SHOULD be employed. Note that these mechanisms do not necessarily follow the same architecture as the ordinary process for incorporating EPSKs described in this draft.\"\r\n\r\nWhere was the ordinary process for incorporating EPSKs described? Is \"incorporating\" a PSK the same as \"provisioning\" one? If so, several ways were described. What's the problem with these mechanisms (e.g. PAKE) having a different architecture from these ordinary processes? Are they not compatible?",
+      "createdAt": "2020-08-19T23:05:42Z",
+      "updatedAt": "2020-11-01T01:19:18Z",
+      "closedAt": "2020-11-01T01:19:18Z",
+      "comments": [
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Perhaps this refers to the process in I-D.ietf-tls-external-psk-importer, which takes a provisioned PSK and performs a transformation on it to ensure that it is unique? That can then be incorporated into the key schedule. \r\nThis is different from the PAKE process, which doesn't pass through the ePSK importer mechanism. \r\nNot sure if that was the original intention, but if so we should write clarifying text. ",
+          "createdAt": "2020-09-14T11:17:20Z",
+          "updatedAt": "2020-09-14T11:17:20Z"
+        }
+      ]
+    },
+    {
+      "number": 54,
+      "id": "MDU6SXNzdWU2OTkzMjUwNDM=",
+      "title": "PSK Security Properties Incomplete",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/54",
+      "state": "CLOSED",
+      "author": "jhoyla",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The sentence \"TLS 1.3 tries to maintain the following seven security properties:\" leaves out the eighth property, \"Protection of Endpoint Identities\". \r\nThe reason it was left out is (presumably) because RFC explicitly calls out protection of certificates, but in Section 5 we discuss the privacy properties of PSKs, so it seems appropriate to mention it here, even if to say that it doesn't apply directly.\r\nSee #36.",
+      "createdAt": "2020-09-11T13:33:12Z",
+      "updatedAt": "2020-11-01T01:29:28Z",
+      "closedAt": "2020-11-01T01:29:28Z",
+      "comments": [
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "We also mention \"Protection of Endpoint Identities\" in Section 3.1 which becomes something of a non-sequitur. ",
+          "createdAt": "2020-09-11T13:35:20Z",
+          "updatedAt": "2020-09-11T13:35:20Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I don't see this sentence in the document, so I'm considering this overcome by events! Please re-open (and send a PR) if you think it's not addressed.",
+          "createdAt": "2020-11-01T01:29:28Z",
+          "updatedAt": "2020-11-01T01:29:28Z"
+        }
+      ]
+    },
+    {
+      "number": 57,
+      "id": "MDU6SXNzdWU3MTYxNDAzNjE=",
+      "title": "replace master",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/57",
+      "state": "CLOSED",
+      "author": "seanturner",
+      "authorAssociation": "NONE",
+      "assignees": [],
+      "labels": [],
+      "body": "s7 includes the following and in light of 8446bis we should probable replace \"master\":\r\n\r\n    4.  Where possible the master PSK (that which is fed into the\r\n        importer) SHOULD be deleted after the imported keys have been\r\n        generated.  This protects an attacker from bootstrapping a\r\n        compromise of one node into the ability to attack connections\r\n        between any node; otherwise the attacker can recover the master\r\n        key and then re-run the importer itself.",
+      "createdAt": "2020-10-07T02:12:31Z",
+      "updatedAt": "2020-11-01T01:28:09Z",
+      "closedAt": "2020-11-01T01:28:09Z",
+      "comments": []
+    },
+    {
+      "number": 60,
+      "id": "MDU6SXNzdWU3MzM5OTcwMTE=",
+      "title": "Group PSKs",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/60",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The draft currently says \"It is NOT RECOMMENDED to share the same PSK between more than one client and server.\"\r\n\r\nJohn says: group PSK violates both \u201cpeer authentication\u201d and \u201cdowngrade protection property\u201d. It also violates \u201csecrecy of the session keys\u201d. Two-party PSK already does not provide \u201cKey Compromise Impersonation (KCI) resistance\u201d and \u201cProtection of endpoint identities\u201d and psk_key does not provide \u201cForward secret with respect to long-term keys\u201d. So when psk_ke is used in a group, the only property left is \u201cUniqueness of the session keys\u201d...I am skeptical to introduce this new group PSK mode in an informal guidance document. If group PSK should be allowed, it should be more clearly declared as a new mode of TLS 1.3 and the security properties given and not given should be more clearly stated.",
+      "createdAt": "2020-11-01T15:46:18Z",
+      "updatedAt": "2020-11-02T22:15:40Z",
+      "closedAt": "2020-11-02T22:15:40Z",
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I guess John thinks NOT RECOMMENDED is not sufficient and we should stronger language like SHALL NOT. ",
+          "createdAt": "2020-11-01T15:46:58Z",
+          "updatedAt": "2020-11-01T15:46:58Z"
+        }
+      ]
+    },
+    {
+      "number": 61,
+      "id": "MDU6SXNzdWU3MzM5OTczNTc=",
+      "title": "TLS 1.3 vs 1.2 API",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/61",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The draft says \u201cOpenSSL and BoringSSL: Applications specify support for external PSKs via distinct ciphersuites.\u201d\r\n\r\nJohn wrote: I assume this is not the case for TLS 1.3 as the cipher suites in TLS 1.3 are independent of the authentication.\r\n\r\n\r\n",
+      "createdAt": "2020-11-01T15:47:59Z",
+      "updatedAt": "2020-11-02T18:34:55Z",
+      "closedAt": "2020-11-02T18:34:55Z",
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I guess it would help to clarify. In my opinion, we should only look at APIs of TLS 1.3.",
+          "createdAt": "2020-11-01T15:48:33Z",
+          "updatedAt": "2020-11-01T15:48:33Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I fixed this directly on main.",
+          "createdAt": "2020-11-02T18:34:55Z",
+          "updatedAt": "2020-11-02T18:34:55Z"
+        }
+      ]
+    },
+    {
+      "number": 63,
+      "id": "MDU6SXNzdWU3MzM5OTkzNDU=",
+      "title": "Adding security weaknesses of two party PSK",
+      "url": "https://github.com/tlswg/external-psk-design-team/issues/63",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "John wrote: There also several weaknesses/limitation that are hinted at in RFC 8446 which apply for two-party PSK authenticated connections. As this is a guidance document for all uses of external PSK, I think this document should bring up and expand upon:\r\n\r\n-\tKey Compromise Impersonation (KCI) resistance \r\n-\tProtection of endpoint identities  \r\n-\tForward secret with respect to long-term keys (psk_ke only) \r\n\r\nAn additional security property given by signature authentication but not psk authentication is non-repudiation. As stated by Wikipedia \u201cBy this property, an entity that has signed some information cannot at a later time deny having signed it.\u201d",
+      "createdAt": "2020-11-01T15:56:34Z",
+      "updatedAt": "2020-11-03T13:44:01Z",
+      "closedAt": "2020-11-03T13:44:01Z",
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "This is a fair comment and I don't see any reason not to add these",
+          "createdAt": "2020-11-01T15:56:52Z",
+          "updatedAt": "2020-11-01T15:56:52Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@ms-s, can you please send a PR?",
+          "createdAt": "2020-11-01T23:22:39Z",
+          "updatedAt": "2020-11-01T23:22:39Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Closing as resolved (by #65).",
+          "createdAt": "2020-11-03T13:44:00Z",
+          "updatedAt": "2020-11-03T13:44:00Z"
+        }
+      ]
+    }
+  ],
+  "pulls": [
+    {
+      "number": 4,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzc5MDczOTQx",
+      "title": "Add stack interface section.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/4",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "First cut at #4.\r\n\r\ncc @ms-s",
+      "createdAt": "2020-02-24T16:07:31Z",
+      "updatedAt": "2020-02-25T16:06:07Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "b303d1c313afd8981b90edf408e157507dcc9710",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/apis",
+      "headRefOid": "bdb6e44a0a4e0f1b7b5beb817b572b1159fa70ce",
+      "closedAt": "2020-02-25T16:05:55Z",
+      "mergedAt": "2020-02-25T16:05:54Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "c9543300d4772d1551b5f8535f14f5a17d0b253a"
+      },
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Thanks a lot. This looks good to start with.\r\n\r\nI think we should also discuss what kind of matching is done on the PSK identity. For example, RFC 7925 says: \"For use with this profile, the PSK identities SHOULD NOT assume a structured format (such as domain names, distinguished names, or IP addresses), and a byte-by-byte comparison operation MUST be used by the server for any operation related to the PSK identity.\"\r\n\r\nSimilarly, RFC 4279 in Section 5.1 describes the UTF-8 encoding of identities to improve interoperability for those cases where the identity is configured by a human using some management interface. \r\n\r\nIf in TLS 1.3, the identity is only used as a hint for looking up the correct PSK in the database, then this would be a significant departure from what was the norm previously. Highlighting this in our document would make sense.\r\n\r\nThe current text also says 'These callbacks must provide the PSK identity (as a character string)'. But the openssl s_server and s_client seem to work without providing PSK identities and use the default character string 'Client_identity' as the psk_identity. ",
+          "createdAt": "2020-02-25T16:02:53Z",
+          "updatedAt": "2020-02-25T16:02:53Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Merging and moving ^^ to an issue!",
+          "createdAt": "2020-02-25T16:06:06Z",
+          "updatedAt": "2020-02-25T16:06:06Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 5,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzc5Mzg5ODg1",
+      "title": "cleanup of use-cases and initial text on known attacks",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/5",
+      "state": "MERGED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Moved links in use cases sections to references and made the text somewhat more concise. Added some initial text on known attacks. ",
+      "createdAt": "2020-02-25T06:24:59Z",
+      "updatedAt": "2020-02-25T16:21:53Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "b303d1c313afd8981b90edf408e157507dcc9710",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "6aa40281f192e02688df8efa1ba8800857119acd",
+      "closedAt": "2020-02-25T16:21:53Z",
+      "mergedAt": "2020-02-25T16:21:53Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "da75551c7a119ad8a88e8b7bf3e8d375ce20e786"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 10,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgwNDIwNzc4",
+      "title": "Add section on attacks",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/10",
+      "state": "MERGED",
+      "author": "jhoyla",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Sorted the attacks into three classes.",
+      "createdAt": "2020-02-26T17:49:02Z",
+      "updatedAt": "2020-02-28T17:03:12Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "da75551c7a119ad8a88e8b7bf3e8d375ce20e786",
+      "headRepository": "jhoyla/external-psk-design-team",
+      "headRefName": "jhoyla/attacks",
+      "headRefOid": "2ed8abd47fdf9a1e9531688661220bf61f4bce25",
+      "closedAt": "2020-02-28T17:00:01Z",
+      "mergedAt": "2020-02-28T17:00:01Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "b875ba9e65b868f205ec84c2a6c81cae80939617"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzY1MzkxMzM4",
+          "commit": {
+            "abbreviatedOid": "ef71f78"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "The content is great -- just requesting some style changes. I'm happy to do them if you want to merge now!",
+          "createdAt": "2020-02-27T03:17:14Z",
+          "updatedAt": "2020-02-27T03:26:05Z",
+          "comments": [
+            {
+              "originalPosition": 69,
+              "body": "```suggestion\r\nserver, and that these never switch roles.  If this assumption is violated, standard TLS 1.3 security properties invalidated.\r\n```",
+              "createdAt": "2020-02-27T03:17:14Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 70,
+              "body": "```suggestion\r\n```",
+              "createdAt": "2020-02-27T03:17:21Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 72,
+              "body": "```suggestion\r\nTLS 1.3 tries to maintain the following eight security properties in the handshake:  \r\n\r\n1. Matching the same session keys;\r\n2. Session key secrecy;\r\n3. Peer authentication;\r\n4. Session key uniqueness;\r\n5. Downgrade protection;\r\n6. Forward secrecy with respect to long-term keys;\r\n7. Key Compromise Impersonation (KCI) resistance; and\r\n8. Endpoint identity protection.\r\n\r\nA na\u00efve sharing of PSKs, even assuming only honest\r\n```",
+              "createdAt": "2020-02-27T03:20:56Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 73,
+              "body": "```suggestion\r\nbut curious participants know the key, can violate all these properties, bar one.  Endpoint identity protection\r\n```",
+              "createdAt": "2020-02-27T03:21:22Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 74,
+              "body": "```suggestion\r\nholds vacuously, because the client and server do not use certificates in PSK mode. (This is not true with use of the \"tls_cert_with_extern_psk\" extension {{?I-D.ietf-tls-tls13-cert-with-extern-psk}}.)\r\n```",
+              "createdAt": "2020-02-27T03:21:30Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 76,
+              "body": "```suggestion\r\nIn the following sub-sections, we list attacks that demonstrate violations of these properties when the fundamental PSK assumption.\r\n```",
+              "createdAt": "2020-02-27T03:22:47Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 68,
+              "body": "```suggestion\r\nThe TLS external PSK authentication mechanism implicitly assumes one fundamental property: each PSK is known to exactly one client and one\r\n```",
+              "createdAt": "2020-02-27T03:23:18Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 82,
+              "body": "```suggestion\r\nThe attack proceeds as follows:\r\n```",
+              "createdAt": "2020-02-27T03:23:29Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 78,
+              "body": "```suggestion\r\n### Redirection (Selfie-style)\r\n```",
+              "createdAt": "2020-02-27T03:23:48Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 94,
+              "body": "```suggestion\r\ncan act both as TLS server and client. In the Selfie attack, a malicious non-member reroutes a connection from the\r\n```",
+              "createdAt": "2020-02-27T03:24:00Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 103,
+              "body": "```suggestion\r\n1. `A` sends a `ClientHello` to `B`, without including a key share.\r\n```",
+              "createdAt": "2020-02-27T03:24:23Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 104,
+              "body": "```suggestion\r\n2. The handshake completes as expected.\r\n```",
+              "createdAt": "2020-02-27T03:24:35Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 116,
+              "body": "nit: Some steps below are missing terminal periods.",
+              "createdAt": "2020-02-27T03:25:07Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 130,
+              "body": "```suggestion\r\nThis attack, and minor variants of it, violate the remaining properties outlined above.\r\n```",
+              "createdAt": "2020-02-27T03:25:22Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            },
+            {
+              "originalPosition": 137,
+              "body": "```suggestion\r\n```\r\n\r\nWe can refer back to these attacks in the recommendation text!",
+              "createdAt": "2020-02-27T03:25:46Z",
+              "updatedAt": "2020-02-28T16:39:25Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzY2NTQ2NTg3",
+          "commit": {
+            "abbreviatedOid": "2ed8abd"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "LGTM -- we can clean up nits after!",
+          "createdAt": "2020-02-28T16:59:46Z",
+          "updatedAt": "2020-02-28T16:59:46Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgwNjE3NjIx",
+      "title": "Add some core guidance text.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/11",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Addresses #7, #8, and #9.",
+      "createdAt": "2020-02-27T03:28:26Z",
+      "updatedAt": "2020-03-01T02:28:49Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "827c6fb03128caa68f6be095bf3f6f22d367ab79",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/recommendations",
+      "headRefOid": "137737173abd52ba6f249e102a03a250ca189959",
+      "closedAt": "2020-03-01T02:28:49Z",
+      "mergedAt": "2020-03-01T02:28:49Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "3a70b867c68da64b952229efd73907c4045a4f93"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 12,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgwOTQ3MTQy",
+      "title": "added some more text on how stacks deal with psk identity",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/12",
+      "state": "MERGED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-02-27T16:28:57Z",
+      "updatedAt": "2020-02-28T17:01:57Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "da75551c7a119ad8a88e8b7bf3e8d375ce20e786",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "53cbbae6f5f7f3619325c182361be5c000170b78",
+      "closedAt": "2020-02-28T17:01:57Z",
+      "mergedAt": "2020-02-28T17:01:57Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "827c6fb03128caa68f6be095bf3f6f22d367ab79"
+      },
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Thanks!",
+          "createdAt": "2020-02-28T17:01:53Z",
+          "updatedAt": "2020-02-28T17:01:53Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzY2NTQ3Mzg5",
+          "commit": {
+            "abbreviatedOid": "53cbbae"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-02-28T17:00:57Z",
+          "updatedAt": "2020-02-28T17:00:57Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgyMDYwNzMx",
+      "title": "Shuffle content.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/13",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-03-01T15:52:29Z",
+      "updatedAt": "2020-03-01T15:52:45Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "3a70b867c68da64b952229efd73907c4045a4f93",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/shuffla",
+      "headRefOid": "db6553bc6f08f57506b3691a4b124b88b5c334d8",
+      "closedAt": "2020-03-01T15:52:45Z",
+      "mergedAt": "2020-03-01T15:52:45Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "81ebd51cefbeef6656fc16a5f921ccffddf56ecf"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 14,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgzMDMxOTI4",
+      "title": "Word bashing.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/14",
+      "state": "MERGED",
+      "author": "jhoyla",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-03-03T15:55:05Z",
+      "updatedAt": "2020-03-03T16:17:13Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "c3ab158e850313302f4f684561934314a6d69c07",
+      "headRepository": "jhoyla/external-psk-design-team",
+      "headRefName": "jhoyla/word-bash",
+      "headRefOid": "a780e59fd3b023c255b1bd615d1334305111c461",
+      "closedAt": "2020-03-03T16:17:12Z",
+      "mergedAt": "2020-03-03T16:17:12Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "bdffbcf368e332245a06dab86af6546c0caea6c2"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzY4MTE5OTI2",
+          "commit": {
+            "abbreviatedOid": "a780e59"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-03-03T16:17:05Z",
+          "updatedAt": "2020-03-03T16:17:05Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzgzMDc0OTk3",
+      "title": "Comments from Russ Housley on 03-Mar-2020",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/20",
+      "state": "MERGED",
+      "author": "russhousley",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Changes to comments from Russ Housley on 03-Mar-2020",
+      "createdAt": "2020-03-03T17:16:06Z",
+      "updatedAt": "2020-03-03T17:53:04Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "bdffbcf368e332245a06dab86af6546c0caea6c2",
+      "headRepository": "russhousley/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "734b326c3dbfe4fd04ea7de773e00bf11171c97f",
+      "closedAt": "2020-03-03T17:53:04Z",
+      "mergedAt": "2020-03-03T17:53:04Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "017427087615324475662448005ca8b0203e921b"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzY4MTk1ODY2",
+          "commit": {
+            "abbreviatedOid": "734b326"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "LGTM -- thanks, Russ!",
+          "createdAt": "2020-03-03T17:52:59Z",
+          "updatedAt": "2020-03-03T17:52:59Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzg1MzY3Mzkw",
+      "title": "Update draft-group-tls-external-psk-guidance.md",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/21",
+      "state": "MERGED",
+      "author": "upros",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Notes:\r\n\r\nCertificateless server-to-server communication is definitively used for OTT communications e.g. https://www.cisco.com/c/en/us/td/docs/wireless/controller/technotes/8-8/b_cisco_mobility_express_8_8/b_cisco_mobility_express_8_8_chapter_0100.html",
+      "createdAt": "2020-03-09T03:29:46Z",
+      "updatedAt": "2020-03-09T13:37:59Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "017427087615324475662448005ca8b0203e921b",
+      "headRepository": "upros/external-psk-design-team",
+      "headRefName": "patch-1",
+      "headRefOid": "52fab19ee38dd64b0ef335a9b763725914facc7c",
+      "closedAt": "2020-03-09T13:37:59Z",
+      "mergedAt": "2020-03-09T13:37:59Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "a8d9d4496e33d8fc2807d7d7ea4b9f76c8c958b8"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMTg4Mzc2",
+          "commit": {
+            "abbreviatedOid": "ae45426"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-09T13:37:36Z",
+          "updatedAt": "2020-03-09T13:37:37Z",
+          "comments": [
+            {
+              "originalPosition": 52,
+              "body": "```suggestion\r\n```",
+              "createdAt": "2020-03-09T13:37:36Z",
+              "updatedAt": "2020-03-09T13:37:45Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMTg4NTQ1",
+          "commit": {
+            "abbreviatedOid": "52fab19"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-03-09T13:37:50Z",
+          "updatedAt": "2020-03-09T13:37:50Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzg1NjU4NDc2",
+      "title": "Extensively revise intro to focus more on the practical impacts",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/23",
+      "state": "MERGED",
+      "author": "ekr",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "of key sharing and less on whether the 7 security guarantees\r\nare met.",
+      "createdAt": "2020-03-09T15:33:17Z",
+      "updatedAt": "2020-03-09T15:39:44Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "2d7299cb1e1ac260420ee7d09f2b6ed496bd791e",
+      "headRepository": "ekr/external-psk-design-team",
+      "headRefName": "revise_intro",
+      "headRefOid": "cc90e9fcade135b6b451c5a126ca5f58a5714147",
+      "closedAt": "2020-03-09T15:39:44Z",
+      "mergedAt": "2020-03-09T15:39:44Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "da078daa1e88cb9cee4f352df8e0f3be46fdfbe0"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMjkzNzMx",
+          "commit": {
+            "abbreviatedOid": "c211616"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-09T15:39:17Z",
+          "updatedAt": "2020-03-09T15:39:18Z",
+          "comments": [
+            {
+              "originalPosition": 49,
+              "body": "```suggestion\r\n1. Any group member can impersonate any other group member.\r\n2. If a group member is compromised, then the attacker can impersonate any group member (this follows from property (1)).\r\n3. If PSK without DH is used, then compromise of any group member allows the attacker to passively read all traffic.\r\n```",
+              "createdAt": "2020-03-09T15:39:17Z",
+              "updatedAt": "2020-03-09T15:39:36Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMjkzODgy",
+          "commit": {
+            "abbreviatedOid": "c211616"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-03-09T15:39:27Z",
+          "updatedAt": "2020-03-09T15:39:27Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzg1NjY0NDcx",
+      "title": "Restructure the recommendations to more clearly tie them to attacks.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/24",
+      "state": "MERGED",
+      "author": "ekr",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-03-09T15:43:44Z",
+      "updatedAt": "2020-03-09T15:49:16Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "c5d46f12c49cb478acf70510f8900556ee5014a5",
+      "headRepository": "ekr/external-psk-design-team",
+      "headRefName": "restructure_recommendations",
+      "headRefOid": "fa17a0fe591e34cb803bcb417757b58c0d30bcfb",
+      "closedAt": "2020-03-09T15:49:16Z",
+      "mergedAt": "2020-03-09T15:49:16Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "663b092bf00c754e84605d328a6c6fb732180c71"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMzAwODcz",
+          "commit": {
+            "abbreviatedOid": "79dae49"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "Nice cleanup! Only one small comment.",
+          "createdAt": "2020-03-09T15:47:18Z",
+          "updatedAt": "2020-03-09T15:47:59Z",
+          "comments": [
+            {
+              "originalPosition": 10,
+              "body": "Should we also specify the input source? 128 bits chosen from a small space meets the criteria but doesn't help against exhaustive search.\r\n```suggestion\r\n1. Each PSK MUST be derived from at least 128 of entropy and MUST be at least 128-bits long unless the TLS handshake is being used with a separate key\r\n```",
+              "createdAt": "2020-03-09T15:47:19Z",
+              "updatedAt": "2020-03-09T15:48:29Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzcxMzAyNDMx",
+          "commit": {
+            "abbreviatedOid": "fa17a0f"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-03-09T15:49:06Z",
+          "updatedAt": "2020-03-09T15:49:06Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzg5ODMzOTY5",
+      "title": "remove info that is only true for openssl test client and server",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/25",
+      "state": "MERGED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-03-17T13:23:50Z",
+      "updatedAt": "2020-03-17T14:37:17Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "c07872e79e29b2ac1d3138f070a5590a048e0c3b",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "06994993bf8b4cdd9ab37c879d5a50bb64ca2bc7",
+      "closedAt": "2020-03-17T14:37:17Z",
+      "mergedAt": "2020-03-17T14:37:17Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "654986413867dcb085a3ead89c9d04e0418c782e"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 29,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzkyMTE3NDY5",
+      "title": "Integrate text about security properties.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/29",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #26.",
+      "createdAt": "2020-03-23T02:08:12Z",
+      "updatedAt": "2020-03-24T14:54:03Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "654986413867dcb085a3ead89c9d04e0418c782e",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/psk-properties",
+      "headRefOid": "4a9522bbf97e1f2abf1670f23a56c9a8d280d0b8",
+      "closedAt": "2020-03-24T14:54:03Z",
+      "mergedAt": "2020-03-24T14:54:03Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "062e48f0f76460a142b24252350938124f7f86cb"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 30,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzkyMTE5OTMz",
+      "title": "Update guidance text.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/30",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This builds on #29. Closes #27.",
+      "createdAt": "2020-03-23T02:20:46Z",
+      "updatedAt": "2020-03-24T14:53:48Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "caw/psk-properties",
+      "baseRefOid": "c56fa676917005028e43b3e503427fe6614e4a64",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/update-guidance",
+      "headRefOid": "99f35ea4ea9bdd3041abd356fb10607950a3e132",
+      "closedAt": "2020-03-24T14:53:48Z",
+      "mergedAt": "2020-03-24T14:53:48Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "4a9522bbf97e1f2abf1670f23a56c9a8d280d0b8"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 31,
+      "id": "MDExOlB1bGxSZXF1ZXN0MzkyOTExNjU3",
+      "title": "moved recommendations after application scenarios. ",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/31",
+      "state": "MERGED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "explain how tls exporter helps with KDF and mitigating selfie attacks. added text on psk identity usage.",
+      "createdAt": "2020-03-24T10:42:26Z",
+      "updatedAt": "2020-03-27T21:10:10Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "062e48f0f76460a142b24252350938124f7f86cb",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "825c7600531e82732fea052018c95d056f1dbba5",
+      "closedAt": "2020-03-27T21:10:10Z",
+      "mergedAt": "2020-03-27T21:10:10Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "11a2e1a3db330955eaae3c0ef2cec2ebf2476ede"
+      },
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I left it empty for Owen (@upros). He was planning to contribute some text on PSK collisions (between external PSKs and between external and internal PSKs). ",
+          "createdAt": "2020-03-27T21:08:28Z",
+          "updatedAt": "2020-03-27T21:08:28Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I'll merge and will remove it for now. Owen can add it when he gets around to his PR. ",
+          "createdAt": "2020-03-27T21:10:06Z",
+          "updatedAt": "2020-03-27T21:10:06Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgwMzk0MTA2",
+          "commit": {
+            "abbreviatedOid": "f121550"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2020-03-24T14:58:11Z",
+          "updatedAt": "2020-03-24T15:04:10Z",
+          "comments": [
+            {
+              "originalPosition": 99,
+              "body": "This bullet is not something that can \"vary depending on the deployment.\" Can we just move this to its own paragraph below the list, or merge with the first paragraph in this section?",
+              "createdAt": "2020-03-24T14:58:11Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 77,
+              "body": "The second and third sentences in this bullet seem like too much information for the requirement. Can we please revert to the previous text?",
+              "createdAt": "2020-03-24T15:00:34Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 79,
+              "body": "This is redundant with the text in I-D.ietf-tls-external-psk-importer. Since item (3) already recommends using it, I think we should remove this entire bullet.",
+              "createdAt": "2020-03-24T15:01:31Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 80,
+              "body": "It's really hard for me to pull out the requirement from this paragraph. Can we please simplify it, or remove it altogether?",
+              "createdAt": "2020-03-24T15:04:06Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgwMzg3NDY2",
+          "commit": {
+            "abbreviatedOid": "f121550"
+          },
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-24T14:51:43Z",
+          "updatedAt": "2020-03-24T15:07:35Z",
+          "comments": [
+            {
+              "originalPosition": 77,
+              "body": "This feels like a bit of a non-sequitur. We're not using PSK importers to change the hash-function, we using them to make the keys distinct. ",
+              "createdAt": "2020-03-24T14:51:43Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 79,
+              "body": "Maybe we should drop a link to RFC 4122 (UUID) here? Can you create stable ID from a UUID? Do we need to consider access to clock? ",
+              "createdAt": "2020-03-24T15:05:30Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMDk0MTY1",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T14:58:08Z",
+          "updatedAt": "2020-03-26T14:58:09Z",
+          "comments": [
+            {
+              "originalPosition": 77,
+              "body": "This was done based on feedback from Bj\u00f6rn. Feel free to move around this text to some other suitable place in the document. But I agree with Bj\u00f6rn that this is definitely worth highlighting. ",
+              "createdAt": "2020-03-26T14:58:08Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMDk0NTY2",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T14:58:31Z",
+          "updatedAt": "2020-03-26T14:58:31Z",
+          "comments": [
+            {
+              "originalPosition": 79,
+              "body": "Added a reference to RFC 4122. Thanks for the suggestion. ",
+              "createdAt": "2020-03-26T14:58:31Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMDk1NjEx",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T14:59:27Z",
+          "updatedAt": "2020-03-26T14:59:28Z",
+          "comments": [
+            {
+              "originalPosition": 99,
+              "body": "That's correct. Moved this above the bullet list. ",
+              "createdAt": "2020-03-26T14:59:27Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMTAwMjgy",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T15:04:00Z",
+          "updatedAt": "2020-03-26T15:04:01Z",
+          "comments": [
+            {
+              "originalPosition": 79,
+              "body": "This is a guidance document so it is worth pointing out different ways of doing things. I added a reference to UUID (RFC 4122) based on feedback from Jonathan. I understand that you want to keep the recommendations concise. So moved this text to the security considerations. ",
+              "createdAt": "2020-03-26T15:04:01Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMTA0MDQw",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T15:07:38Z",
+          "updatedAt": "2020-03-26T15:07:39Z",
+          "comments": [
+            {
+              "originalPosition": 80,
+              "body": "It is quite simple. We don't recommend sharing PSKs among many nodes. If someone's use case still wants that, then they should use external PSK importers. However, that by itself is not enough. Nodes should know the other end points identifier to prevent rerouting of attacks. And of course, endpoints that know the PSK can always impersonate. ",
+              "createdAt": "2020-03-26T15:07:39Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMTc1NTgy",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-26T16:18:28Z",
+          "updatedAt": "2020-03-26T16:18:29Z",
+          "comments": [
+            {
+              "originalPosition": 80,
+              "body": "This is a lot of text to simply say, \"If you share PSKs, make sure you also include some other form of unique identifier.\" Can we please simplify it?",
+              "createdAt": "2020-03-26T16:18:29Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyMTc2NTQ0",
+          "commit": {
+            "abbreviatedOid": "03a3795"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2020-03-26T16:19:26Z",
+          "updatedAt": "2020-03-26T16:21:03Z",
+          "comments": [
+            {
+              "originalPosition": 73,
+              "body": "Please revert deleting this text!",
+              "createdAt": "2020-03-26T16:19:26Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 136,
+              "body": "This paragraph does not add information. Please remove it.",
+              "createdAt": "2020-03-26T16:19:58Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 151,
+              "body": "nit: extra whitespace",
+              "createdAt": "2020-03-26T16:20:07Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 127,
+              "body": "nit: extra whitespace",
+              "createdAt": "2020-03-26T16:20:16Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 125,
+              "body": "nit: extra whitespace",
+              "createdAt": "2020-03-26T16:20:18Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            },
+            {
+              "originalPosition": 158,
+              "body": "As in my other comment, I think this is too much text to get the point across. It needs to be simplified",
+              "createdAt": "2020-03-26T16:20:59Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyODY4MTg2",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T13:43:40Z",
+          "updatedAt": "2020-03-27T13:43:41Z",
+          "comments": [
+            {
+              "originalPosition": 73,
+              "body": "I am really sorry for the accidental deletion. Reverted. ",
+              "createdAt": "2020-03-27T13:43:40Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyODcxMDU0",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T13:47:08Z",
+          "updatedAt": "2020-03-27T13:47:09Z",
+          "comments": [
+            {
+              "originalPosition": 136,
+              "body": "With Bj\u00f6rn's agreement, this is now removed. ",
+              "createdAt": "2020-03-27T13:47:09Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyODcxMTQ2",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T13:47:15Z",
+          "updatedAt": "2020-03-27T13:47:15Z",
+          "comments": [
+            {
+              "originalPosition": 151,
+              "body": "Should be fixed. ",
+              "createdAt": "2020-03-27T13:47:15Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyODcxNDI0",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T13:47:35Z",
+          "updatedAt": "2020-03-27T13:47:36Z",
+          "comments": [
+            {
+              "originalPosition": 127,
+              "body": "Should be fixed now!",
+              "createdAt": "2020-03-27T13:47:35Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyODc1MDI4",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T13:51:36Z",
+          "updatedAt": "2020-03-27T13:51:37Z",
+          "comments": [
+            {
+              "originalPosition": 158,
+              "body": "I have shortened the security considerations section somewhat. We can further shorten it if others also feel the same way. ",
+              "createdAt": "2020-03-27T13:51:36Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyOTgzMDg1",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T15:51:15Z",
+          "updatedAt": "2020-03-27T15:51:16Z",
+          "comments": [
+            {
+              "originalPosition": 73,
+              "body": "No problem!",
+              "createdAt": "2020-03-27T15:51:15Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyOTg0NTcw",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T15:52:58Z",
+          "updatedAt": "2020-03-27T15:52:58Z",
+          "comments": [
+            {
+              "originalPosition": 89,
+              "body": "This whole section section seems to have different formatting. I'd prefer we just revert this entirely. (That is, break lines at ~80-120 columns, give or take.) I can do that after we merge though.",
+              "createdAt": "2020-03-27T15:52:58Z",
+              "updatedAt": "2020-03-27T19:40:24Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgzMTU0MDYw",
+          "commit": {
+            "abbreviatedOid": "825c760"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T19:45:09Z",
+          "updatedAt": "2020-03-27T19:45:09Z",
+          "comments": [
+            {
+              "originalPosition": 89,
+              "body": "Yes. My editor doesn't add line breaks and I seem to like it. I guess it is best if you do it after the merge. ",
+              "createdAt": "2020-03-27T19:45:09Z",
+              "updatedAt": "2020-03-27T19:45:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgzMTU2OTU0",
+          "commit": {
+            "abbreviatedOid": "825c760"
+          },
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T19:50:01Z",
+          "updatedAt": "2020-03-27T19:50:02Z",
+          "comments": [
+            {
+              "originalPosition": 158,
+              "body": "@chris-wood made another commit that further simplifies the text.",
+              "createdAt": "2020-03-27T19:50:01Z",
+              "updatedAt": "2020-03-27T19:50:02Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgyOTg0OTk5",
+          "commit": {
+            "abbreviatedOid": "4d645c4"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-27T15:53:26Z",
+          "updatedAt": "2020-03-27T20:42:34Z",
+          "comments": [
+            {
+              "originalPosition": 158,
+              "body": "There's nothing in this now-empty section?",
+              "createdAt": "2020-03-27T15:53:26Z",
+              "updatedAt": "2020-03-27T20:42:34Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3MzgzMTg3MjI1",
+          "commit": {
+            "abbreviatedOid": "825c760"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "LGTM pending one orphan section!",
+          "createdAt": "2020-03-27T20:43:32Z",
+          "updatedAt": "2020-03-27T20:43:32Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "id": "MDExOlB1bGxSZXF1ZXN0Mzk1MjgxODQ5",
+      "title": "Update draft-dt-tls-external-psk-guidance.md",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/32",
+      "state": "MERGED",
+      "author": "upros",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "FIxed up:\r\n- some nits on recommendations. I think the wording was a bit off on low entropy PSKs, so I lifted from ekrs text from earlier in the draft.\r\n- some of the stack interface stuff on hints is not valid for TLS1.3 (hints are TLS1.2 and earlier), so removed it.\r\n\r\nSome prelim text on collisions. For completeness, will take a look at gnutls and wolfssl order too. Note, even with the OpenSSL callback sequence, the application still does not know if there is a collision...\r\n",
+      "createdAt": "2020-03-29T16:45:46Z",
+      "updatedAt": "2020-03-30T22:15:31Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "0b60f0bfc5e3f0cc5d1b2b157f9b3e2f695ad710",
+      "headRepository": "upros/external-psk-design-team",
+      "headRefName": "patch-2",
+      "headRefOid": "515ecb670de7b7d3f281475997669cff46ad3189",
+      "closedAt": "2020-03-30T22:15:31Z",
+      "mergedAt": "2020-03-30T22:15:31Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "c7f7becc36281c7349d37d991f0a1fc8e31ff3f2"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mzg0MjY5NTk0",
+          "commit": {
+            "abbreviatedOid": "c81cb22"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-30T22:12:51Z",
+          "updatedAt": "2020-03-30T22:12:51Z",
+          "comments": [
+            {
+              "originalPosition": 92,
+              "body": "Yes, this seems like overkill since it's an implementation detail. I'll remove this TODO after merging.",
+              "createdAt": "2020-03-30T22:12:51Z",
+              "updatedAt": "2020-03-30T22:15:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mzg0MjY5Nzg5",
+          "commit": {
+            "abbreviatedOid": "c81cb22"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-30T22:13:10Z",
+          "updatedAt": "2020-03-30T22:13:11Z",
+          "comments": [
+            {
+              "originalPosition": 83,
+              "body": "```suggestion\r\nreceives a PSK identity in a TLS 1.3 ClientHello, some TLS stacks\r\n```",
+              "createdAt": "2020-03-30T22:13:11Z",
+              "updatedAt": "2020-03-30T22:15:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mzg0MjcwMjYy",
+          "commit": {
+            "abbreviatedOid": "c81cb22"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-30T22:14:05Z",
+          "updatedAt": "2020-03-30T22:14:06Z",
+          "comments": [
+            {
+              "originalPosition": 37,
+              "body": "```suggestion\r\nkeys are only secure against active attack if a Password Authenticated Key Exchange (PAKE) is used with TLS.\r\n```",
+              "createdAt": "2020-03-30T22:14:05Z",
+              "updatedAt": "2020-03-30T22:15:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mzg0MjcwMzM3",
+          "commit": {
+            "abbreviatedOid": "c81cb22"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-03-30T22:14:14Z",
+          "updatedAt": "2020-03-30T22:14:15Z",
+          "comments": [
+            {
+              "originalPosition": 92,
+              "body": "```suggestion\r\n```",
+              "createdAt": "2020-03-30T22:14:15Z",
+              "updatedAt": "2020-03-30T22:15:09Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3Mzg0MjcwOTAz",
+          "commit": {
+            "abbreviatedOid": "515ecb6"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-03-30T22:15:17Z",
+          "updatedAt": "2020-03-30T22:15:17Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDE5ODM2NTMz",
+      "title": "Updates based on Verisign review.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/34",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Addresses #33.\r\n\r\ncc @ekr, @jhoyla, @ms-s",
+      "createdAt": "2020-05-19T02:21:35Z",
+      "updatedAt": "2020-06-01T12:46:37Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "b8c7de10c393ef94be9ac1a31f3507973f140017",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/verisign-feedback",
+      "headRefOid": "3e36b84ae8b24dea1463b1338bf986d0673d3bdb",
+      "closedAt": "2020-06-01T12:46:37Z",
+      "mergedAt": "2020-06-01T12:46:37Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "8edf43c55ca928b3c59b86fb59e48d018b7103fe"
+      },
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Looks good. Thanks for addressing the review!",
+          "createdAt": "2020-06-01T05:41:25Z",
+          "updatedAt": "2020-06-01T05:41:25Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 35,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDYzMjg5Njg2",
+      "title": "add eap-tls-psk reference and minor clean up of references",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/35",
+      "state": "MERGED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-08-05T10:20:21Z",
+      "updatedAt": "2020-08-18T15:02:31Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "5cef451307f12a92353d55626de155bbd2f78d4b",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "85bb8e2c957188545bb46ece35d09ec976791dd4",
+      "closedAt": "2020-08-18T15:02:03Z",
+      "mergedAt": "2020-08-18T15:02:02Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "d4064cc7f14a59b20de9817267f10fe0fd08ff7d"
+      },
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Addressing some of the comments from Carrick Bartle",
+          "createdAt": "2020-08-18T15:02:31Z",
+          "updatedAt": "2020-08-18T15:02:31Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDY5NTQ1NjEz",
+          "commit": {
+            "abbreviatedOid": "85bb8e2"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-18T15:01:58Z",
+          "updatedAt": "2020-08-18T15:01:58Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 37,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5Nzc3Nzgw",
+      "title": "Add note that using SNI mitigates rerouting attacks.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/37",
+      "state": "CLOSED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The Selfie paper points out that if each party uses the SNI extension and terminates a connection on mismatch, rerouting attacks like Selfie aren't possible. I added this note to the explanation of such attacks.",
+      "createdAt": "2020-08-18T22:26:56Z",
+      "updatedAt": "2020-08-18T22:29:19Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "d4064cc7f14a59b20de9817267f10fe0fd08ff7d",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/SNI-mitigation",
+      "headRefOid": "0e7e1209068340ab826f09fa221753c364a65c57",
+      "closedAt": "2020-08-18T22:29:02Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Sorry, I changed my mind about the best terminology to use here.",
+          "createdAt": "2020-08-18T22:29:18Z",
+          "updatedAt": "2020-08-18T22:29:18Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 38,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5Nzc5Mjk2",
+      "title": "Add note that using SNI mitigates rerouting attacks.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/38",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The Selfie paper points out that if each party uses the SNI extension and terminates a connection on mismatch, rerouting attacks like Selfie aren't possible. I added this note to the explanation of such attacks.",
+      "createdAt": "2020-08-18T22:31:47Z",
+      "updatedAt": "2020-11-01T01:23:42Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "d4064cc7f14a59b20de9817267f10fe0fd08ff7d",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/SNI-mitigation",
+      "headRefOid": "eabb52d952927a4ebb19ed48806dd7ddde38c943",
+      "closedAt": "2020-11-01T01:23:42Z",
+      "mergedAt": "2020-11-01T01:23:42Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "94570c5e46392baa0d74a64e5ba9afa46a345f80"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDg3NjM5MjE0",
+          "commit": {
+            "abbreviatedOid": "760c501"
+          },
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-09-14T10:55:01Z",
+          "updatedAt": "2020-09-14T10:55:01Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTIxMTg1MDYw",
+          "commit": {
+            "abbreviatedOid": "760c501"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-11-01T01:22:56Z",
+          "updatedAt": "2020-11-01T01:22:57Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "```suggestion\r\ndetailed below. (Note that this class of attack is not possible if each member uses\r\nthe SNI extension {{!RFC6066}} and terminates the connection on mismatch. See {{Selfie}} for details.)\r\n```",
+              "createdAt": "2020-11-01T01:22:56Z",
+              "updatedAt": "2020-11-01T01:23:25Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 39,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5Nzg5Mjg5",
+      "title": "Nit: Remove 'ostensibly' from description of rerouting attack.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/39",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Since \"C\", from its perspective, completes the handshake with \"A\" (without mistaking it for some other endpoint or something), I removed \"ostensibly\" from the description of the completion of the handshake.",
+      "createdAt": "2020-08-18T23:06:22Z",
+      "updatedAt": "2020-08-18T23:56:38Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "d4064cc7f14a59b20de9817267f10fe0fd08ff7d",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/ostensible-handshake",
+      "headRefOid": "9a77c9dc5ab972d35c813745d70e2810155ddd9a",
+      "closedAt": "2020-08-18T23:56:37Z",
+      "mergedAt": "2020-08-18T23:56:37Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "42c0112f062e1a302bb3844f93e67fc8f382f4c5"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDY5OTA2MjI3",
+          "commit": {
+            "abbreviatedOid": "9a77c9d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-18T23:56:33Z",
+          "updatedAt": "2020-08-18T23:56:33Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 40,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5Nzk1Njcw",
+      "title": "Nit: Remove 'obvious' from 'obvious collisions.'",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/40",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "I'm not sure what makes a collision obvious versus non-obvious, so let's remove the word \"obvious.\"",
+      "createdAt": "2020-08-18T23:28:20Z",
+      "updatedAt": "2020-08-18T23:56:21Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "d4064cc7f14a59b20de9817267f10fe0fd08ff7d",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/obvious-collision",
+      "headRefOid": "b95564af82be74cb64269a48d5a0760bd373d736",
+      "closedAt": "2020-08-18T23:56:21Z",
+      "mergedAt": "2020-08-18T23:56:21Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "8ddae2085e86ba9ec224b3a6ee06ebce743e0ddd"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 42,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5ODMzMjI3",
+      "title": "Define the term 'pair-wise' on first use.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/42",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-08-19T00:11:20Z",
+      "updatedAt": "2020-08-19T14:21:16Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "42c0112f062e1a302bb3844f93e67fc8f382f4c5",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/pair-wise",
+      "headRefOid": "f37e6f569d591c00d0598ea77331f5ce06fcf12b",
+      "closedAt": "2020-08-19T14:21:16Z",
+      "mergedAt": "2020-08-19T14:21:16Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "bc73275c7f5a5b5a6fc99f2ae80be64625d54d7f"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcwNTA3OTQ5",
+          "commit": {
+            "abbreviatedOid": "e7ddee5"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-08-19T14:21:01Z",
+          "updatedAt": "2020-08-19T14:21:02Z",
+          "comments": [
+            {
+              "originalPosition": 6,
+              "body": "```suggestion\r\nBelow, we list some example use-cases where pair-wise external PSKs (i.e., external PSKs that are shared\r\n```",
+              "createdAt": "2020-08-19T14:21:01Z",
+              "updatedAt": "2020-08-19T14:21:06Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcwNTA4MDky",
+          "commit": {
+            "abbreviatedOid": "f37e6f5"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-19T14:21:10Z",
+          "updatedAt": "2020-08-19T14:21:10Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5ODQyNzc0",
+      "title": "Change 'fast open' to 'early data.'",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/43",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Since the term 'fast open' isn't used in RFC 8446, replace 'fast open' with the term that RFC 8446 uses for '0-RTT data'--namely, 'early data.'",
+      "createdAt": "2020-08-19T00:21:51Z",
+      "updatedAt": "2020-08-19T14:20:41Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "42c0112f062e1a302bb3844f93e67fc8f382f4c5",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/early-data",
+      "headRefOid": "6fece1e8708622e34713239eedef9bbc3391a861",
+      "closedAt": "2020-08-19T14:20:41Z",
+      "mergedAt": "2020-08-19T14:20:41Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "ec412dffd3a35beb85adcc78b1531a61e0e91708"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcwNTA3MzUy",
+          "commit": {
+            "abbreviatedOid": "82b8f24"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-08-19T14:20:25Z",
+          "updatedAt": "2020-08-19T14:20:25Z",
+          "comments": [
+            {
+              "originalPosition": 5,
+              "body": "```suggestion\r\nconnections with early data.\r\n```",
+              "createdAt": "2020-08-19T14:20:25Z",
+              "updatedAt": "2020-08-19T14:20:32Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 46,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDY5OTEzNTAx",
+      "title": "Specify that mitigating privacy risks is an open problem.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/46",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Related issue and discussion: https://github.com/tlswg/external-psk-design-team/issues/36#issuecomment-675796072",
+      "createdAt": "2020-08-19T04:31:10Z",
+      "updatedAt": "2020-08-20T12:24:47Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "42c0112f062e1a302bb3844f93e67fc8f382f4c5",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/privacy-precautions",
+      "headRefOid": "e5d19f73978564185bce6fb9d14739552cac3b9d",
+      "closedAt": "2020-08-20T12:24:47Z",
+      "mergedAt": "2020-08-20T12:24:46Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "e37979aa174c27813e02f552b74011219808b107"
+      },
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@cbartle891 please let me know what you think of the suggestion above!",
+          "createdAt": "2020-08-19T14:22:37Z",
+          "updatedAt": "2020-08-19T14:22:37Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@chris-wood I disagree that those analyses are out of scope since they concern the use of external PSKs, but if \"out of scope\" is understood to be synonymous with \"we're not going to do it,\" then this change is fine. :)",
+          "createdAt": "2020-08-19T22:45:08Z",
+          "updatedAt": "2020-08-19T22:45:08Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": ">  but if \"out of scope\" is understood to be synonymous with \"we're not going to do it,\" then this change is fine. :)\r\n\r\nIndeed -- \"out of scope for this document\" means \"we're not doing it in this document.\"",
+          "createdAt": "2020-08-19T22:46:51Z",
+          "updatedAt": "2020-08-19T22:46:51Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcwNTA5MjI1",
+          "commit": {
+            "abbreviatedOid": "44c643d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-08-19T14:22:12Z",
+          "updatedAt": "2020-08-19T14:22:13Z",
+          "comments": [
+            {
+              "originalPosition": 7,
+              "body": "How about:\r\n\r\n```suggestion\r\ntwo or more connections together that use the same external PSK on the wire. Techniques for mitigating\r\nthese risks require analysis and are out of scope for this document.\r\n```",
+              "createdAt": "2020-08-19T14:22:12Z",
+              "updatedAt": "2020-08-20T12:24:36Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcwNTA5MzMy",
+          "commit": {
+            "abbreviatedOid": "44c643d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-19T14:22:19Z",
+          "updatedAt": "2020-08-19T14:22:19Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcxNTQxNjc0",
+          "commit": {
+            "abbreviatedOid": "e5d19f7"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-20T12:24:40Z",
+          "updatedAt": "2020-08-20T12:24:40Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 49,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDcwNTAzODYz",
+      "title": "Nit: Clarify when external PSKs must adhere to these requirements.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/49",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Also add '.DS_Store' to gitignore.",
+      "createdAt": "2020-08-19T22:59:00Z",
+      "updatedAt": "2020-08-20T21:25:18Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "bc73275c7f5a5b5a6fc99f2ae80be64625d54d7f",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/epsk-requirements",
+      "headRefOid": "80877bb56e8c220c58b3089c8559c47607a95e53",
+      "closedAt": "2020-08-20T21:25:18Z",
+      "mergedAt": "2020-08-20T21:25:18Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "735e01f9796484a3cac26f2c67dc4de74708767f"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDcxOTk2OTU5",
+          "commit": {
+            "abbreviatedOid": "80877bb"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-08-20T21:25:14Z",
+          "updatedAt": "2020-08-20T21:25:14Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 51,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDcwNTcxMjk2",
+      "title": "Move comment about password guidance to the introduction.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/51",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The comment about how there are no guidelines about PSKs like there are about generating passwords seemed like a statement of the motivation for this draft, so I moved it to the introduction.\r\n\r\n(I was going to add a reference for the statement, but I couldn't figure out how to get the citation to compile correctly. This was the document I was going to cite, in case you think it needs it: https://pages.nist.gov/800-63-3/sp800-63b.html.)",
+      "createdAt": "2020-08-20T02:28:56Z",
+      "updatedAt": "2020-10-31T15:34:50Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "bc73275c7f5a5b5a6fc99f2ae80be64625d54d7f",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/password-guidance",
+      "headRefOid": "b8e316fc05f0fafb3580a70bbd8416b2a4df69c6",
+      "closedAt": "2020-10-31T15:34:50Z",
+      "mergedAt": "2020-10-31T15:34:50Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "3184dbe4cb486f0252670035acb9abc50a74843d"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDg3NjQxNDE4",
+          "commit": {
+            "abbreviatedOid": "0083476"
+          },
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-09-14T10:58:16Z",
+          "updatedAt": "2020-09-14T10:58:16Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDkwNTUyNTIz",
+          "commit": {
+            "abbreviatedOid": "0083476"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-09-17T12:45:01Z",
+          "updatedAt": "2020-09-17T12:45:03Z",
+          "comments": [
+            {
+              "originalPosition": 16,
+              "body": "```suggestion\r\nThere are many resources that provide guidance for password generation and verification aimed towards improving security. \r\nHowever, there is no such equivalent for external Pre-Shared Keys (PSKs) in TLS. This document aims to reduce\r\nthat gap. It lists TLS security properties provided by PSKs under certain assumptions and demonstrates\r\nhow violations of these assumptions lead to attacks. This document also discusses PSK use\r\ncases, provisioning processes, and TLS stack implementation support in the context of these\r\nassumptions. It provides advice for applications in various use cases to help meet these\r\nassumptions.\r\n```",
+              "createdAt": "2020-09-17T12:45:01Z",
+              "updatedAt": "2020-10-31T15:34:26Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 52,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDc0MDg4Mzcz",
+      "title": "Add brief rationale for recommendation of importers.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/52",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-08-26T18:48:59Z",
+      "updatedAt": "2020-11-01T01:20:54Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "735e01f9796484a3cac26f2c67dc4de74708767f",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/importer-rationale",
+      "headRefOid": "6568d06ca8722d35439125d17f6c9405f93f644c",
+      "closedAt": "2020-11-01T01:20:54Z",
+      "mergedAt": "2020-11-01T01:20:54Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "52aaacd94b2ca7e8d6706deb95aeaf6004fd70e8"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDg3NjQwMjEw",
+          "commit": {
+            "abbreviatedOid": "d607b44"
+          },
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-09-14T10:56:30Z",
+          "updatedAt": "2020-09-14T10:56:30Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDkwNTM3MTEz",
+          "commit": {
+            "abbreviatedOid": "d607b44"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2020-09-17T12:25:19Z",
+          "updatedAt": "2020-09-17T12:25:24Z",
+          "comments": [
+            {
+              "originalPosition": 9,
+              "body": "```suggestion\r\nwhen configuring PSKs for a client-server pair. Importers make provisioning\r\nexternal PSKs easier and less error prone by deriving a unique, imported PSK from the \r\nexternal PSK for each key derivation function a node supports. See the Security Considerations\r\nin {{!I-D.ietf-tls-external-psk-importer}} for more information.\r\n```",
+              "createdAt": "2020-09-17T12:25:19Z",
+              "updatedAt": "2020-11-01T01:20:45Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 53,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDc0MTQ0Mzkz",
+      "title": "Mention exception for EPSK support in BoringSSL.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/53",
+      "state": "MERGED",
+      "author": "cbartle891",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2020-08-26T20:47:06Z",
+      "updatedAt": "2020-09-17T12:14:59Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "735e01f9796484a3cac26f2c67dc4de74708767f",
+      "headRepository": "cbartle891/external-psk-design-team",
+      "headRefName": "cdb/boringssl-epsk-support",
+      "headRefOid": "994131e8c625991b915c96023d7217c4f2d271de",
+      "closedAt": "2020-09-17T12:14:59Z",
+      "mergedAt": "2020-09-17T12:14:59Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "dd21fd10a5125f8169095c8fb51c6df89dc4ddde"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDg3NzE0OTc2",
+          "commit": {
+            "abbreviatedOid": "994131e"
+          },
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-09-14T12:45:37Z",
+          "updatedAt": "2020-09-14T12:45:37Z",
+          "comments": []
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDkwNTI5Mzcw",
+          "commit": {
+            "abbreviatedOid": "994131e"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-09-17T12:14:54Z",
+          "updatedAt": "2020-09-17T12:14:54Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 55,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDg3MzgyNzcx",
+      "title": "Address Watson's comments.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/55",
+      "state": "MERGED",
+      "author": "jhoyla",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes Issues #41 and #50. ",
+      "createdAt": "2020-09-15T15:33:38Z",
+      "updatedAt": "2020-11-01T01:18:53Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "735e01f9796484a3cac26f2c67dc4de74708767f",
+      "headRepository": "jhoyla/external-psk-design-team",
+      "headRefName": "watson-review",
+      "headRefOid": "ddf3d9cb6b43861d5793d5e7b9781e3b8fb21161",
+      "closedAt": "2020-11-01T01:18:53Z",
+      "mergedAt": "2020-11-01T01:18:52Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "ff612e40a776f65698f235577e655b197b7dfd4b"
+      },
+      "comments": [
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@cbartle891 does this address your comments in #50?",
+          "createdAt": "2020-09-15T15:35:17Z",
+          "updatedAt": "2020-09-15T15:35:17Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Yep, looks great!",
+          "createdAt": "2020-09-15T21:38:55Z",
+          "updatedAt": "2020-09-15T21:38:55Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTIxMTQ4Mjkw",
+          "commit": {
+            "abbreviatedOid": "f357f2a"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2020-10-31T15:41:07Z",
+          "updatedAt": "2020-10-31T15:41:08Z",
+          "comments": [
+            {
+              "originalPosition": 14,
+              "body": "```suggestion\r\n1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least 128 bits long, and SHOULD be combined with a DH exchange, e.g., by using the \"psk_dhe_ke\" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As discussed in {{sec-properties}}, low entropy PSKs, i.e., those\r\n```",
+              "createdAt": "2020-10-31T15:41:07Z",
+              "updatedAt": "2020-10-31T15:41:20Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 56,
+      "id": "MDExOlB1bGxSZXF1ZXN0NDg3MzkzMjcz",
+      "title": "Address Carrick's review.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/56",
+      "state": "MERGED",
+      "author": "jhoyla",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #44, #45, and #47.",
+      "createdAt": "2020-09-15T15:50:16Z",
+      "updatedAt": "2020-11-01T01:22:16Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "dd21fd10a5125f8169095c8fb51c6df89dc4ddde",
+      "headRepository": "jhoyla/external-psk-design-team",
+      "headRefName": "carrick-review",
+      "headRefOid": "522c75cb27fdcfb4c05cefe2c9381a2dc9e3e1b9",
+      "closedAt": "2020-11-01T01:22:16Z",
+      "mergedAt": "2020-11-01T01:22:16Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "736034103efa8c5f582bfc9dc43dca5a4214a059"
+      },
+      "comments": [
+        {
+          "author": "jhoyla",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@cbartle891 does this address your (other) comments?",
+          "createdAt": "2020-09-15T15:53:39Z",
+          "updatedAt": "2020-09-15T15:53:39Z"
+        },
+        {
+          "author": "cbartle891",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I think this adds really helpful context to what would otherwise be confusing on its own, thanks.",
+          "createdAt": "2020-09-15T21:34:35Z",
+          "updatedAt": "2020-09-15T21:34:35Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NDkwNTA5MDAz",
+          "commit": {
+            "abbreviatedOid": "e0cb65a"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2020-09-17T11:48:50Z",
+          "updatedAt": "2020-09-17T12:10:33Z",
+          "comments": [
+            {
+              "originalPosition": 13,
+              "body": "\"full security\" seems too vague. I'd recommend reverting this change, as I don't think it adds much and isn't consistent with the other items in this list. (This bullet item is identifying IoT as a use case, not explaining all the ways in which IoT systems may use PSKs, and why those certain ways are good or bad or whatever.)",
+              "createdAt": "2020-09-17T11:48:50Z",
+              "updatedAt": "2020-09-17T13:31:15Z"
+            },
+            {
+              "originalPosition": 33,
+              "body": "```suggestion\r\n- Internet of Things (IoT) and devices with limited computational capabilities. Many PSK provisioning examples are possible in this use-case. For example, in a given setting, IoT devices may all share the same PSK and use it to communicate with a central server (one key for n devices), have their own key for communicating with a central server (n keys for n devices), or have pairwise keys for communicating with each other (n^2 keys for n devices). \r\n\r\nThe exact provisioning process depends on the system requirements and threat model. Generally, use of \r\na single PSK shared between more than one node is not recommended, even if other accommodations \r\nare made, such as client certificate authentication after PSK-based connection establishment. \r\nSee {{recommendations}}.\r\n```",
+              "createdAt": "2020-09-17T12:07:48Z",
+              "updatedAt": "2020-09-17T13:31:15Z"
+            },
+            {
+              "originalPosition": 18,
+              "body": "Unrelated to your change, but I'd also suggest rewriting this item:\r\n\r\n```suggestion\r\n- Group chats. In this use-case, group participants may be provisioned an external PSK out-of-band for establishing authenticated connections with other members of the group.\r\n```",
+              "createdAt": "2020-09-17T12:10:29Z",
+              "updatedAt": "2020-09-17T13:31:15Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 58,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTEzNTIzODc3",
+      "title": "Drop \"master\" in favor of \"main\".",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/58",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #57.",
+      "createdAt": "2020-11-01T01:28:00Z",
+      "updatedAt": "2020-11-01T01:28:09Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "94570c5e46392baa0d74a64e5ba9afa46a345f80",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/drop-master",
+      "headRefOid": "1a895e19d3b431287e6bbcabd2acf1ab08a6cd4c",
+      "closedAt": "2020-11-01T01:28:09Z",
+      "mergedAt": "2020-11-01T01:28:09Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "d591ebffbd47940fe562a68d8296c1f06f82b4d5"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 59,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTEzNTI0NTk4",
+      "title": "Address Jim's review.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/59",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Closes #48.\r\n\r\ncc @jhoyla, @russhousley ",
+      "createdAt": "2020-11-01T01:36:11Z",
+      "updatedAt": "2020-11-03T13:43:37Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "4fe59f1f64680746d72d8faab44eef8b8d991bcb",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/jim-review",
+      "headRefOid": "0364b4a37e989aaa3601bc6eebf5547c764b7569",
+      "closedAt": "2020-11-03T13:43:37Z",
+      "mergedAt": "2020-11-03T13:43:37Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "79fd4d93292227957af2c68b7fe74665edab9008"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 62,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTEzNjQ1NDg4",
+      "title": "Made some fixes based on comments from John",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/62",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "I opened issues for commits I have not yet addressed. This pull request adds a reference to RFC 8773 and notes that PSKs maybe used for their protection against quantum computers. Also reworded some attacks and text based on feedback from John.",
+      "createdAt": "2020-11-01T15:50:51Z",
+      "updatedAt": "2020-11-02T14:32:24Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "d591ebffbd47940fe562a68d8296c1f06f82b4d5",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "edceb3d96895bc479892adda705d0ab6fc1323b6",
+      "closedAt": "2020-11-02T14:32:24Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 64,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTE0MTc4NjIy",
+      "title": "fix comments from John",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/64",
+      "state": "CLOSED",
+      "author": "ms-s",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "This one merges my previous commits into one and tries to address #63. Please double check since I am updating many drafts before the deadline. Feel free to make changes as necessary. ",
+      "createdAt": "2020-11-02T16:33:40Z",
+      "updatedAt": "2020-11-03T13:42:11Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "c0987121a2b0cfedce57cbfe0ce7b9ed78291d3f",
+      "headRepository": "ms-s/external-psk-design-team",
+      "headRefName": "master",
+      "headRefOid": "4bd20c20e2d02db61b69815c7e2bd0c99d00807f",
+      "closedAt": "2020-11-03T13:42:11Z",
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 65,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTE0MjYwMTI1",
+      "title": "Apply suggestions from Mohit and John.",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/65",
+      "state": "MERGED",
+      "author": "chris-wood",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Builds on #64, and closes #60, #61, and #63.\r\n\r\ncc @ms-s, @jhoyla, @russhousley -- please review so we can submit today!",
+      "createdAt": "2020-11-02T19:05:30Z",
+      "updatedAt": "2020-11-02T22:15:40Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "c51b0835d9a74cdb10e3574f6c6511b04cf4a773",
+      "headRepository": "tlswg/external-psk-design-team",
+      "headRefName": "caw/mohit-and-john",
+      "headRefOid": "666f6187e4d191b1ceb60923944200dea15d1ce9",
+      "closedAt": "2020-11-02T22:15:40Z",
+      "mergedAt": "2020-11-02T22:15:40Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "4fe59f1f64680746d72d8faab44eef8b8d991bcb"
+      },
+      "comments": [
+        {
+          "author": "ms-s",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "There are two numbered lists both of which only seem to have 1s? I see that you have removed the text on security weaknesses of PSKs (lack of identity protection/forward secrecy etc.) and also removed the reference to RFC 8773. I am completely fine with both as long as we provide a convincing answer to John's review. ",
+          "createdAt": "2020-11-02T21:08:59Z",
+          "updatedAt": "2020-11-02T21:08:59Z"
+        },
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "> There are two numbered lists both of which only seem to have 1s? \r\n\r\nMarkdown handles the numbering for us.\r\n\r\n> I see that you have removed the text on security weaknesses of PSKs (lack of identity protection/forward secrecy etc.) \r\n\r\nWe have a section on identity protection, and the recommendations discuss forward secrecy, so I think more is redudant.\r\n\r\n> and also removed the reference to RFC 8773. \r\n\r\nNo, that's still there.",
+          "createdAt": "2020-11-02T22:09:59Z",
+          "updatedAt": "2020-11-02T22:09:59Z"
+        }
+      ],
+      "reviews": []
+    },
+    {
+      "number": 66,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTQzNTkzNzM4",
+      "title": "Update draft-ietf-tls-external-psk-guidance.md",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/66",
+      "state": "MERGED",
+      "author": "russhousley",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Resolve the comments from Jonathan Hammell",
+      "createdAt": "2020-12-21T16:45:41Z",
+      "updatedAt": "2020-12-21T18:34:21Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "79fd4d93292227957af2c68b7fe74665edab9008",
+      "headRepository": "russhousley/external-psk-design-team",
+      "headRefName": "jonathan-comment-resolution",
+      "headRefOid": "348497f11423111ce75f25aa5bfd962768b456bd",
+      "closedAt": "2020-12-21T18:34:21Z",
+      "mergedAt": "2020-12-21T18:34:21Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "77186dc5c63bc7291daded7ef3bab7c86ad6b937"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTU2NTgzNTEw",
+          "commit": {
+            "abbreviatedOid": "348497f"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2020-12-21T18:34:17Z",
+          "updatedAt": "2020-12-21T18:34:17Z",
+          "comments": []
+        }
+      ]
+    },
+    {
+      "number": 67,
+      "id": "MDExOlB1bGxSZXF1ZXN0NTc0Mjk2NTEw",
+      "title": "Ben smyth comments",
+      "url": "https://github.com/tlswg/external-psk-design-team/pull/67",
+      "state": "MERGED",
+      "author": "russhousley",
+      "authorAssociation": "CONTRIBUTOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Resolve comments from Ben Smyth.",
+      "createdAt": "2021-02-16T15:58:12Z",
+      "updatedAt": "2021-02-20T23:25:02Z",
+      "baseRepository": "tlswg/external-psk-design-team",
+      "baseRefName": "master",
+      "baseRefOid": "77186dc5c63bc7291daded7ef3bab7c86ad6b937",
+      "headRepository": "russhousley/external-psk-design-team",
+      "headRefName": "ben-smyth-comments",
+      "headRefOid": "d9d2a5db27b3dd94f813f3072e7077d16e496d66",
+      "closedAt": "2021-02-20T21:01:42Z",
+      "mergedAt": "2021-02-20T21:01:42Z",
+      "mergedBy": "chris-wood",
+      "mergeCommit": {
+        "oid": "ae2227780a40b3f21b6025f6fbda561d0c665ed5"
+      },
+      "comments": [
+        {
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "@russhousley can you please cut a new version of the draft?",
+          "createdAt": "2021-02-20T21:01:52Z",
+          "updatedAt": "2021-02-20T21:01:52Z"
+        },
+        {
+          "author": "russhousley",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "Done.  Revision -02 has been submitted.",
+          "createdAt": "2021-02-20T21:20:01Z",
+          "updatedAt": "2021-02-20T21:20:01Z"
+        },
+        {
+          "author": "russhousley",
+          "authorAssociation": "CONTRIBUTOR",
+          "body": "I am getting a permission error when I try to set the tag for \"draft-ietf-tls-external-psk-guidance-02\".  Everything else is done, and I have used my local file to submit the Internet-Draft.  Please set the tag when you have a minute.",
+          "createdAt": "2021-02-20T23:25:02Z",
+          "updatedAt": "2021-02-20T23:25:02Z"
+        }
+      ],
+      "reviews": [
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0Nzc4NTcw",
+          "commit": {
+            "abbreviatedOid": "750c4b9"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "CHANGES_REQUESTED",
+          "body": "",
+          "createdAt": "2021-02-20T19:21:24Z",
+          "updatedAt": "2021-02-20T19:24:13Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "Can we revert this particular change? (cc @cbartle891)",
+              "createdAt": "2021-02-20T19:21:24Z",
+              "updatedAt": "2021-02-20T20:23:35Z"
+            },
+            {
+              "originalPosition": 66,
+              "body": "What is the point of this new text?",
+              "createdAt": "2021-02-20T19:24:04Z",
+              "updatedAt": "2021-02-20T20:23:35Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0NzgyMTgw",
+          "commit": {
+            "abbreviatedOid": "750c4b9"
+          },
+          "author": "russhousley",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T20:14:45Z",
+          "updatedAt": "2021-02-20T20:14:45Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "This addresses a comment.  It you want to keep it, it belongs later in the Introduction.",
+              "createdAt": "2021-02-20T20:14:45Z",
+              "updatedAt": "2021-02-20T20:23:35Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0NzgyMjg5",
+          "commit": {
+            "abbreviatedOid": "750c4b9"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T20:16:23Z",
+          "updatedAt": "2021-02-20T20:16:23Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "That's fine then. Can you please move it to some place later in the intro? (I just don't want to lose it.)",
+              "createdAt": "2021-02-20T20:16:23Z",
+              "updatedAt": "2021-02-20T20:23:35Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0NzgyMzY5",
+          "commit": {
+            "abbreviatedOid": "750c4b9"
+          },
+          "author": "russhousley",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T20:17:42Z",
+          "updatedAt": "2021-02-20T20:17:42Z",
+          "comments": [
+            {
+              "originalPosition": 66,
+              "body": "Look at the two sentences that come before this one.  Those sentences say that the PSK does not offer these things, so if you need these things, a fresh handshake is the way to get them.",
+              "createdAt": "2021-02-20T20:17:42Z",
+              "updatedAt": "2021-02-20T20:23:35Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0NzgyODAy",
+          "commit": {
+            "abbreviatedOid": "d9d2a5d"
+          },
+          "author": "russhousley",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T20:24:16Z",
+          "updatedAt": "2021-02-20T20:24:16Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "I put it in the second paragraph in the intro.",
+              "createdAt": "2021-02-20T20:24:16Z",
+              "updatedAt": "2021-02-20T20:24:16Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0NzgzODAx",
+          "commit": {
+            "abbreviatedOid": "d9d2a5d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T20:39:24Z",
+          "updatedAt": "2021-02-20T20:39:25Z",
+          "comments": [
+            {
+              "originalPosition": 66,
+              "body": "Yes, I get that, but that seems obvious. Does it need to be said explicitly? ",
+              "createdAt": "2021-02-20T20:39:25Z",
+              "updatedAt": "2021-02-20T20:39:25Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0Nzg1MTAy",
+          "commit": {
+            "abbreviatedOid": "d9d2a5d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2021-02-20T21:01:33Z",
+          "updatedAt": "2021-02-20T21:01:34Z",
+          "comments": [
+            {
+              "originalPosition": 66,
+              "body": "(I do not feel strongly about this, so let's just land it.)",
+              "createdAt": "2021-02-20T21:01:33Z",
+              "updatedAt": "2021-02-20T21:01:34Z"
+            }
+          ]
+        },
+        {
+          "id": "MDE3OlB1bGxSZXF1ZXN0UmV2aWV3NTk0Nzg1MTA3",
+          "commit": {
+            "abbreviatedOid": "d9d2a5d"
+          },
+          "author": "chris-wood",
+          "authorAssociation": "CONTRIBUTOR",
+          "state": "APPROVED",
+          "body": "",
+          "createdAt": "2021-02-20T21:01:38Z",
+          "updatedAt": "2021-02-20T21:01:38Z",
+          "comments": []
+        }
+      ]
+    }
+  ]
+}
