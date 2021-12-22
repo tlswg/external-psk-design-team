@@ -119,11 +119,11 @@ informative:
 
 This document provides usage guidance for external Pre-Shared Keys (PSKs)
 in Transport Layer Security (TLS) 1.3 as defined in RFC 8446.
-This document lists TLS security properties provided by PSKs under certain
+It lists TLS security properties provided by PSKs under certain
 assumptions, and then demonstrates how violations of these assumptions lead
-to attacks. This document discusses PSK use cases and provisioning processes.
-This document provides advice for applications to help meet these assumptions.
-This document also lists the privacy and security properties that are not
+to attacks. Advice for applications to help meet these assumptions is
+provided. It also discusses PSK use cases and provisioning processes.
+Finally, it lists the privacy and security properties that are not
 provided by TLS 1.3 when external PSKs are used.
 
 --- middle
@@ -196,7 +196,7 @@ obvious weaknesses here:
 1. If PSK is combined with a fresh ephemeral key exchange, then compromise of a group member that knows
 the resulting shared secret will enable the attacker to passively read (and actively modify) traffic.
 1. If PSK is not combined with fresh ephemeral key exchange, then compromise of any group member allows the
-attacker to passively read (and actively modify) all traffic.
+attacker to passively read (and actively modify) all traffic, including past traffic.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
 to connect them in unintended ways, as described below. Note that a partial mitigiation
@@ -204,8 +204,8 @@ against this class of attack is available: each group member includes the SNI ex
 and terminates the connection on mismatch between the presented SNI value and the
 receiving member's known identity. See {{Selfie}} for details.
 
-To illustrate the rerouting attack, consider the group of peers who know
-the PSK be `A`, `B`, and `C`. The attack proceeds as follows:
+To illustrate the rerouting attack, consider three peers, `A`, `B`, and `C`,
+who all know the PSK. The attack proceeds as follows:
 
 1. `A` sends a `ClientHello` to `B`.
 1. The attacker intercepts the message and redirects it to `C`.
@@ -231,7 +231,7 @@ possible without establishing a new PSK for all of the non-revoked members.
 
 Entropy properties of external PSKs may also affect TLS security properties. For example,
 if a high entropy PSK is used, then PSK-only key establishment modes provide expected
-security properties for TLS, including, for example, including establishing the same
+security properties for TLS, including establishing the same
 session keys between peers, secrecy of session keys, peer authentication, and downgrade
 protection. See {{RFC8446, Section E.1}} for an explanation of these properties.
 However, these modes lack forward security. Forward security may be achieved by using a
@@ -260,14 +260,14 @@ This section describes known use cases and provisioning processes for external P
 
 This section lists some example use-cases where pair-wise external PSKs, i.e., external
 PSKs that are shared between only one server and one client, have been used for authentication
-in TLS.
+in TLS.  There was no attempt to prioritize the examples in any particular order.
 
 - Device-to-device communication with out-of-band synchronized keys. PSKs provisioned out-of-band
 for communicating with known identities, wherein the identity to use is discovered via a different
 online protocol.
 
 - Intra-data-center communication. Machine-to-machine communication within a single data center
-or PoP may use externally provisioned PSKs, primarily for the purposes of supporting TLS
+or point-of-presence (PoP) may use externally provisioned PSKs, primarily for the purposes of supporting TLS
 connections with early data; see {{security-con}} for considerations when using early data
 with external PSKs.
 
@@ -317,12 +317,12 @@ Examples of PSK provisioning processes are included below.
 - Many industrial protocols assume that PSKs are distributed and assigned manually via one of the following
 approaches: typing the PSK into the devices, or using a Trust On First Use (TOFU) approach with a device
 completely unprotected before the first login did take place. Many devices have very limited UI. For example,
-they may only have a numeric keypad or even less number of buttons. When the TOFU approach is not suitable,
+they may only have a numeric keypad or even fewer buttons. When the TOFU approach is not suitable,
 entering the key would require typing it on a constrained UI.
 
 - Some devices provision PSKs via an out-of-band, cloud-based syncing protocol.
 
-- Some secrets may be baked into or hardware or software device components. Moreover, when this is done
+- Some secrets may be baked into hardware or software device components. Moreover, when this is done
 at manufacturing time, secrets may be printed on labels or included in a Bill of Materials for ease of
 scanning or import.
 
@@ -467,7 +467,7 @@ random number, or its Universally Unique IDentifier (UUID) {{RFC4122}}.
 Note that such persistent, global identifiers have privacy implications;
 see {{endpoint-privacy}}.
 
-Each endpoint SHOULD know the identifier of the other endpoint with which its wants
+Each endpoint SHOULD know the identifier of the other endpoint with which it wants
 to connect and SHOULD compare it with the other endpoint’s identifier used in
 ImportedIdentity.context. It is however important to remember that endpoints
 sharing the same group PSK can always impersonate each other.
@@ -500,4 +500,4 @@ Oleg Pekar,
 Owen Friel, and
 Russ Housley.
 
-This document was improved by a high quality review by Ben Kaduk.
+This document was improved by a high quality reviews by Ben Kaduk and John Mattsson.
