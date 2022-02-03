@@ -15,15 +15,15 @@ in Transport Layer Security (TLS) 1.3 as defined in RFC 8446.
 It lists TLS security properties provided by PSKs under certain
 assumptions, and then demonstrates how violations of these assumptions lead
 to attacks. Advice for applications to help meet these assumptions is
-provided. It also discusses PSK use cases and provisioning processes.
+provided. This document also discusses PSK use cases and provisioning processes.
 Finally, it lists the privacy and security properties that are not
 provided by TLS 1.3 when external PSKs are used. 
     " name="description">
-<meta content="xml2rfc 3.12.0" name="generator">
+<meta content="xml2rfc 3.12.1" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-ietf-tls-external-psk-guidance-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.12.0
+  xml2rfc 3.12.1
     Python 3.9.7
     appdirs 1.4.4
     ConfigArgParse 1.3
@@ -1022,11 +1022,11 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">Guidance for External PSK Usage in TLS</td>
-<td class="right">January 2022</td>
+<td class="right">February 2022</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Housley, et al.</td>
-<td class="center">Expires 15 July 2022</td>
+<td class="center">Expires 7 August 2022</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1039,12 +1039,12 @@ svg [stroke="fill"], svg [fill^="#fff"] {
 <dd class="internet-draft">draft-ietf-tls-external-psk-guidance-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2022-01-11" class="published">11 January 2022</time>
+<time datetime="2022-02-03" class="published">3 February 2022</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2022-07-15">15 July 2022</time></dd>
+<dd class="expires"><time datetime="2022-08-07">7 August 2022</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1074,7 +1074,7 @@ in Transport Layer Security (TLS) 1.3 as defined in RFC 8446.
 It lists TLS security properties provided by PSKs under certain
 assumptions, and then demonstrates how violations of these assumptions lead
 to attacks. Advice for applications to help meet these assumptions is
-provided. It also discusses PSK use cases and provisioning processes.
+provided. This document also discusses PSK use cases and provisioning processes.
 Finally, it lists the privacy and security properties that are not
 provided by TLS 1.3 when external PSKs are used.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
@@ -1105,7 +1105,7 @@ provided by TLS 1.3 when external PSKs are used.<a href="#section-abstract-1" cl
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 15 July 2022.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 7 August 2022.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1297,11 +1297,11 @@ obvious weaknesses here:<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 the resulting shared secret will enable the attacker to passively read (and actively modify) traffic.<a href="#section-4.1-2.2" class="pilcrow">¶</a>
 </li>
           <li id="section-4.1-2.3">If PSK is not combined with fresh ephemeral key exchange, then compromise of any group member allows the
-attacker to passively read (and actively modify) all traffic, including past traffic.<a href="#section-4.1-2.3" class="pilcrow">¶</a>
+attacker to passively read (and actively modify) all traffic, including reading past traffic.<a href="#section-4.1-2.3" class="pilcrow">¶</a>
 </li>
         </ol>
 <p id="section-4.1-3">Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. Note that a partial mitigiation
+to connect them in unintended ways, as described below. Note that a partial mitigation
 against this class of attack is available: each group member includes the SNI extension <span>[<a href="#RFC6066" class="xref">RFC6066</a>]</span>
 and terminates the connection on mismatch between the presented SNI value and the
 receiving member's known identity. See <span>[<a href="#Selfie" class="xref">Selfie</a>]</span> for details.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
@@ -1476,7 +1476,7 @@ as is currently under discussion for EAP-TLS-PSK <span>[<a href="#I-D.mattsson-e
 <p id="section-6-1">Recommended requirements for applications using external PSKs are as follows:<a href="#section-6-1" class="pilcrow">¶</a></p>
 <ol start="1" type="1" class="normal type-1" id="section-6-2">
 <li id="section-6-2.1">Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
-128 bits long, and SHOULD be combined with an ephemeral key exchange exchange, e.g., by using the
+128 bits long, and SHOULD be combined with an ephemeral key exchange, e.g., by using the
 "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As
 discussed in <a href="#sec-properties" class="xref">Section 4</a>, low entropy PSKs, i.e., those derived from less
 than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
@@ -1596,7 +1596,7 @@ collisions altogether.<a href="#section-6.1.2-2" class="pilcrow">¶</a></p>
       </h2>
 <p id="section-7-1">PSK privacy properties are orthogonal to security properties described in <a href="#sec-properties" class="xref">Section 4</a>.
 TLS does little to keep PSK identity information private. For example,
-an adversary learns information about the external PSK or its identifier by virtue of it
+an adversary learns information about the external PSK or its identifier by virtue of the identifier
 appearing in cleartext in a ClientHello. As a result, a passive adversary can link two or
 more connections together that use the same external PSK on the wire. Depending on the PSK
 identity, a passive attacker may also be able to identify the device, person, or enterprise
@@ -1699,7 +1699,7 @@ source on the client has a significant role in the protection of the early data.
 <dd class="break"></dd>
 <dt id="I-D.irtf-cfrg-cpace">[I-D.irtf-cfrg-cpace]</dt>
         <dd>
-<span class="refAuthor">Abdalla, M.</span>, <span class="refAuthor">Haase, B.</span>, and <span class="refAuthor">J. Hesse</span>, <span class="refTitle">"CPace, a balanced composable PAKE"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-cpace-04</span>, <time datetime="2021-12-10" class="refDate">10 December 2021</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-cpace-04">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-cpace-04</a>&gt;</span>. </dd>
+<span class="refAuthor">Abdalla, M.</span>, <span class="refAuthor">Haase, B.</span>, and <span class="refAuthor">J. Hesse</span>, <span class="refTitle">"CPace, a balanced composable PAKE"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-cfrg-cpace-05</span>, <time datetime="2022-01-14" class="refDate">14 January 2022</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-cpace-05">https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-cpace-05</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.irtf-cfrg-opaque">[I-D.irtf-cfrg-opaque]</dt>
         <dd>

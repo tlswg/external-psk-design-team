@@ -5,12 +5,12 @@
 tls                                                           R. Housley
 Internet-Draft                                            Vigil Security
 Intended status: Informational                                J. Hoyland
-Expires: 15 July 2022                                    Cloudflare Ltd.
+Expires: 7 August 2022                                   Cloudflare Ltd.
                                                                 M. Sethi
                                                                 Ericsson
                                                                C.A. Wood
                                                               Cloudflare
-                                                         11 January 2022
+                                                         3 February 2022
 
 
                  Guidance for External PSK Usage in TLS
@@ -23,10 +23,10 @@ Abstract
    It lists TLS security properties provided by PSKs under certain
    assumptions, and then demonstrates how violations of these
    assumptions lead to attacks.  Advice for applications to help meet
-   these assumptions is provided.  It also discusses PSK use cases and
-   provisioning processes.  Finally, it lists the privacy and security
-   properties that are not provided by TLS 1.3 when external PSKs are
-   used.
+   these assumptions is provided.  This document also discusses PSK use
+   cases and provisioning processes.  Finally, it lists the privacy and
+   security properties that are not provided by TLS 1.3 when external
+   PSKs are used.
 
 Discussion Venues
 
@@ -50,7 +50,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 15 July 2022.
+   This Internet-Draft will expire on 7 August 2022.
 
 Copyright Notice
 
@@ -167,11 +167,12 @@ Table of Contents
 
    3.  If PSK is not combined with fresh ephemeral key exchange, then
        compromise of any group member allows the attacker to passively
-       read (and actively modify) all traffic, including past traffic.
+       read (and actively modify) all traffic, including reading past
+       traffic.
 
    Additionally, a malicious non-member can reroute handshakes between
    honest group members to connect them in unintended ways, as described
-   below.  Note that a partial mitigiation against this class of attack
+   below.  Note that a partial mitigation against this class of attack
    is available: each group member includes the SNI extension [RFC6066]
    and terminates the connection on mismatch between the presented SNI
    value and the receiving member's known identity.  See [Selfie] for
@@ -352,8 +353,8 @@ Table of Contents
 
    1.  Each PSK SHOULD be derived from at least 128 bits of entropy,
        MUST be at least 128 bits long, and SHOULD be combined with an
-       ephemeral key exchange exchange, e.g., by using the "psk_dhe_ke"
-       Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy.  As
+       ephemeral key exchange, e.g., by using the "psk_dhe_ke" Pre-
+       Shared Key Exchange Mode in TLS 1.3, for forward secrecy.  As
        discussed in Section 4, low entropy PSKs, i.e., those derived
        from less than 128 bits of entropy, are subject to attack and
        SHOULD be avoided.  If only low-entropy keys are available, then
@@ -474,16 +475,16 @@ Table of Contents
    PSK privacy properties are orthogonal to security properties
    described in Section 4.  TLS does little to keep PSK identity
    information private.  For example, an adversary learns information
-   about the external PSK or its identifier by virtue of it appearing in
-   cleartext in a ClientHello.  As a result, a passive adversary can
-   link two or more connections together that use the same external PSK
-   on the wire.  Depending on the PSK identity, a passive attacker may
-   also be able to identify the device, person, or enterprise running
-   the TLS client or TLS server.  An active attacker can also use the
-   PSK identity to suppress handshakes or application data from a
-   specific device by blocking, delaying, or rate-limiting traffic.
-   Techniques for mitigating these risks require further analysis and
-   are out of scope for this document.
+   about the external PSK or its identifier by virtue of the identifier
+   appearing in cleartext in a ClientHello.  As a result, a passive
+   adversary can link two or more connections together that use the same
+   external PSK on the wire.  Depending on the PSK identity, a passive
+   attacker may also be able to identify the device, person, or
+   enterprise running the TLS client or TLS server.  An active attacker
+   can also use the PSK identity to suppress handshakes or application
+   data from a specific device by blocking, delaying, or rate-limiting
+   traffic.  Techniques for mitigating these risks require further
+   analysis and are out of scope for this document.
 
    In addition to linkability in the network, external PSKs are
    intrinsically linkable by PSK receivers.  Specifically, servers can
@@ -583,9 +584,9 @@ Table of Contents
    [I-D.irtf-cfrg-cpace]
               Abdalla, M., Haase, B., and J. Hesse, "CPace, a balanced
               composable PAKE", Work in Progress, Internet-Draft, draft-
-              irtf-cfrg-cpace-04, 10 December 2021,
+              irtf-cfrg-cpace-05, 14 January 2022,
               <https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-
-              cpace-04>.
+              cpace-05>.
 
    [I-D.irtf-cfrg-opaque]
               Bourdrez, D., Krawczyk, H., Lewi, K., and C. A. Wood, "The
