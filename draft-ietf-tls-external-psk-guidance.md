@@ -122,7 +122,7 @@ in Transport Layer Security (TLS) 1.3 as defined in RFC 8446.
 It lists TLS security properties provided by PSKs under certain
 assumptions, and then demonstrates how violations of these assumptions lead
 to attacks. Advice for applications to help meet these assumptions is
-provided. It also discusses PSK use cases and provisioning processes.
+provided. This document also discusses PSK use cases and provisioning processes.
 Finally, it lists the privacy and security properties that are not
 provided by TLS 1.3 when external PSKs are used.
 
@@ -196,10 +196,10 @@ obvious weaknesses here:
 1. If PSK is combined with a fresh ephemeral key exchange, then compromise of a group member that knows
 the resulting shared secret will enable the attacker to passively read (and actively modify) traffic.
 1. If PSK is not combined with fresh ephemeral key exchange, then compromise of any group member allows the
-attacker to passively read (and actively modify) all traffic, including past traffic.
+attacker to passively read (and actively modify) all traffic, including reading past traffic.
 
 Additionally, a malicious non-member can reroute handshakes between honest group members
-to connect them in unintended ways, as described below. Note that a partial mitigiation
+to connect them in unintended ways, as described below. Note that a partial mitigation
 against this class of attack is available: each group member includes the SNI extension {{RFC6066}}
 and terminates the connection on mismatch between the presented SNI value and the
 receiving member's known identity. See {{Selfie}} for details.
@@ -339,7 +339,7 @@ as is currently under discussion for EAP-TLS-PSK {{I-D.mattsson-emu-eap-tls-psk}
 Recommended requirements for applications using external PSKs are as follows:
 
 1. Each PSK SHOULD be derived from at least 128 bits of entropy, MUST be at least
-128 bits long, and SHOULD be combined with an ephemeral key exchange exchange, e.g., by using the
+128 bits long, and SHOULD be combined with an ephemeral key exchange, e.g., by using the
 "psk_dhe_ke" Pre-Shared Key Exchange Mode in TLS 1.3, for forward secrecy. As
 discussed in {{sec-properties}}, low entropy PSKs, i.e., those derived from less
 than 128 bits of entropy, are subject to attack and SHOULD be avoided. If only
@@ -434,7 +434,7 @@ collisions altogether.
 
 PSK privacy properties are orthogonal to security properties described in {{sec-properties}}.
 TLS does little to keep PSK identity information private. For example,
-an adversary learns information about the external PSK or its identifier by virtue of it
+an adversary learns information about the external PSK or its identifier by virtue of the identifier
 appearing in cleartext in a ClientHello. As a result, a passive adversary can link two or
 more connections together that use the same external PSK on the wire. Depending on the PSK
 identity, a passive attacker may also be able to identify the device, person, or enterprise
